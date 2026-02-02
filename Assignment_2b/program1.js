@@ -10,5 +10,5 @@ function getData() {
     })
 }
 
-getData();
+getData(); //calls the fetch function
 document.getElementById("catButton").addEventListener("click", getData); // cat button which i needed AI to help create
