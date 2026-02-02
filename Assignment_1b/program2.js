@@ -63,4 +63,4 @@ function programTwo(sequence) {
   return maxSum;
 }
 
-console.log(programTwo([100, 101, 102, 3, 4, 5, 6, 9]));
+console.log(programTwo([100, 103, 102, 3, 2, 5, 2, 9]));
