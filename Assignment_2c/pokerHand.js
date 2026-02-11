@@ -4,9 +4,15 @@
 1) Split api call into two: 
     a) if deck hasnt been called then call a deck and then pull 5 cards
     b) if deck HAS been called then shuffle and pull 5 cards from existing deck
-2) Once shuffled deck has been created, create elif tree to measure value highest sequence of cards
-    Ways to do this:
+2) Once shuffled deck create a means to measure value highest sequence of cards
+    extract values DONE
+    extract suits DONE
+    convert face cards to numbers → next
+    check duplicates → pairs/trips/quads
+    check suits → flush
+    check sequences → straight
     Assign values to cards (2-14)
+
    VALUES determine:
     pair
     two pair
@@ -39,7 +45,7 @@ function getDeck() {
         fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1') //api deck generator
         .then(response => response.json()) //convert response to js readable json
         .then(deckData => {
-            //console.log("Deck data:", deckData); //this shows the json array position i needed
+            console.log("Deck data:", deckData); //this shows the json array position i needed
 
             playingDeck = deckData.deck_id; // Assigning specific deckId to a variable 
             console.log("Saved deck id:", playingDeck); //checking what the id was.
@@ -52,9 +58,9 @@ function getDeck() {
         .then(response => response.json()) //convert response to json
         .then(cardData => {
         console.log("Card data:", cardData); //print the data to log to check it
-        handValues = cardData.cards.map(card => card.value);
-        handSuits = cardData.cards.map(card => card.suit);
-        console.log("saved handvalues", handValues);
+        handValues = cardData.cards.map(card => card.value);//extracts existing card value data and saves it
+        handSuits = cardData.cards.map(card => card.suit); //same for suit data
+        console.log("saved handvalues", handValues); 
         console.log("saved handsuits", handSuits);
             const hand = document.getElementById('poker');
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
@@ -74,8 +80,8 @@ function getDeck() {
 
         .then(response => response.json())
         .then(cardData => {
-            handValues = cardData.cards.map(card => card.value);
-            handSuits = cardData.cards.map(card => card.suit);
+            handValues = cardData.cards.map(card => card.value); //extracts existing card value data and saves it
+            handSuits = cardData.cards.map(card => card.suit); //same for suit data
             console.log("Card data:", cardData);
             
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
