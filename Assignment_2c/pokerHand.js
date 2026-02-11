@@ -156,13 +156,23 @@ function checkFlush(handSuits){
 function checkStraights(numberValues){
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
-    console.log(sorted);
-    console.log("Consecutive matches:", consec);
-    return consec.length === 4; // it will only return true if there is 5 consecutives (5-1 because computers)
+    if (consec.length === 4) return true;
+   
+
+    //solution for ace being 1 or 14 with low straights
+    if (sorted.includes(14)) { //if the sorted array has an ace
+        let aceLow = sorted.map(v => v === 14 ? 1 : v).sort((a, b) => a - b); //create a mew array and treat the ace as value 1 or 14 with ternary operator and check for 1-5
+        consec = aceLow.filter((value, i) => aceLow[i + 1] === value + 1);
+        if (consec.length === 4) return true; //if yes then consider ace a 1 and return true
+    }
+    return false;
 }
+
 function checkRoyalFlush(){
     //explicitly check for royal flush but also flush
     //return the cards and an award
 }
 document.getElementById("freshHand").addEventListener("click", getDeck);
 // #endregion
+
+//to do :create handEvaluation function that compares them all. Take out the checks from deck function and put them all there. Also begin refactoring and clean up css
