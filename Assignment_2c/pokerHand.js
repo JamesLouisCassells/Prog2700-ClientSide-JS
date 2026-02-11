@@ -12,19 +12,6 @@
     check sequences → straight
     Assign values to cards (2-14)
 
-   VALUES determine:
-    pair
-    two pair
-    three of a kind
-    straight
-    full house
-    four of a kind
-    high card
-
-    SUITS determine:
-    flush
-    straight flush
-    royal flush
 3) Return (with fancy highlighting) the highest combination and explain what it is (ie two pair)
     
 */ 
@@ -115,6 +102,7 @@ function getDeck() {
                 return parseInt(str) //parse for numbers within string (easy part)
         })
             console.log("Number Values:", numberValues);
+            checkDuplicates(numberValues);
             console.log("Suit Values:", handSuits)
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
@@ -127,15 +115,47 @@ function getDeck() {
 }
 document.getElementById("freshHand").addEventListener("click", getDeck);
 
-function checkPairs(){
-    //parse through value array and check for two of a kind, three of a kind, four of a kind
-    //return a two of a kind and the two cards if true
-    //same for three and four
+function checkDuplicates(numberValues){
+    //create an object 
+    //      **(tried using set here but that removed duplicates; easier and cleaner with poker logic to create an object)**
+    // populate object with key value pairs representing the value and the count of how many times it showed [["7", 2]] etc
+    count = {};
+    numberValues.forEach(value => {
+        if (count[value]) {
+            count[value]++;
+         } else {
+            count[value] = 1;
+            }
+    });
+    //console.log("Amount:", count); 
+    let duplicates = Object.entries(count); //convert count from an object of key value pairs back to a readable/mappable array of duplicates and totals.
+    let pairs = duplicates.filter( entry => entry[1] === 2 ); //filter through duplicates 2d array -- keep where the count shows duplicates anount -- store result in pairs
+    let triples = duplicates.filter( entry => entry[1] === 3 ); // three of a kind
+    let quads = duplicates.filter( entry => entry[1] === 4 ); //four of a kind
+    //console.log("pairs:", pairs, "trips:", triples, "quads:", quads)
+    console.log(pairs);
+    console.log(triples);
+    console.log(quads);
+    return {pairs, triples, quads};   //make this function useable for the comparison function to check values
 }
 
-function checkStraights(){
+
+function checkFlush(handSuits){
     //parse through value array and suits array and look for 4 or more in sequence (need to find a way to check that for suits)
     //return the cards and the straight type
+    let count = {};
+    handSuits.forEach(suit => {
+        if (count[suit]) {
+            count[suit]++;
+         } else {
+            count[suit] = 1;
+            }
+    });
+
+    let flush = Object.entries(count);
+    let one = flush.filter( entry => entry[1] === 5 ); //if four of the suits are the same
+    console.log(one)
+    return {flush};
 }
 
 function checkRoyalFlush(){
