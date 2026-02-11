@@ -127,4 +127,20 @@ function getDeck() {
 }
 document.getElementById("freshHand").addEventListener("click", getDeck);
 
+function checkPairs(){
+    //parse through value array and check for two of a kind, three of a kind, four of a kind
+    //return a two of a kind and the two cards if true
+    //same for three and four
+}
 
+function checkStraights(){
+    //parse through value array and suits array and look for 4 or more in sequence (need to find a way to check that for suits)
+    //return the cards and the straight type
+}
+
+function checkRoyalFlush(){
+    //explicitly check for royal flush but also flush
+    //return the cards and an award
+}
+
+//Ill write a function that outlines the card heirarchy so i can state what would beat the presented hand? This might be too large an undertaking
