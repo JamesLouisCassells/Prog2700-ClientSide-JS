@@ -1,13 +1,14 @@
+/* Part Three: Stylising Webpage */
 body {
   font-family: Arial, sans-serif;
-  background: #0f172a;
+  background: #2c023f;
   color: white;
   text-align: center;
   padding: 40px;
 }
 
 button {
-  background: #22c55e;
+  background: #dcf094;
   border: none;
   padding: 12px 18px;
   font-size: 20px;
