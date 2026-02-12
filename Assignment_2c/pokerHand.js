@@ -117,7 +117,7 @@ return (numberValues, handSuits)
 // #region Part Four: Function algorithms to determine best hand
 function checkDuplicates(numberValues){
     // populate a new object with key value pairs representing the value and the count of how many times it showed [["7", 2]] etc
-    count = {}; //create an empty object
+    let count = {}; //create an empty object
     numberValues.forEach(value => { //run forEach to run through the numberValues array
         if (count[value]) { //if it finds the same value already exists in count plus one to that object - [["7", 2]]
             count[value]++;
@@ -135,6 +135,87 @@ function checkDuplicates(numberValues){
     console.log(quads);
     return {pairs, triples, quads};   //return makes this function useable for the comparison function to check values
 }
+
+function checkOnePair(numberValues) {
+    const { pairs } = checkDuplicates(numberValues); //create an object called triples from duplicates function
+    if (pairs.length === 1 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
+        const pairValue = Number(pairs[0][0]);
+        return {
+            name: "One Pair",
+            ranks: [pairValue],
+            display: `One Pair (${pairValue})`
+        };
+    }
+    return null;
+}
+
+function checkTwoPair(numberValues) {
+    const { pairs } = checkDuplicates(numberValues); //create an object called triples from duplicates function
+    if (pairs.length === 1 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
+        const p1 = Number(pairs[0][0]);
+        const p2 = Number(pairs[0][1]);
+        const highPair = Math.max(p1, p2);
+        const lowPair = Math.min(p1, p2);
+        return {
+            name: "Two Pairs",
+            ranks: [highPair. lowPair],
+            display: `Two Pairs (${highPair}s and ${lowPair}s})`
+        };
+    }
+    return null;
+}
+
+function checkHighCard(numberValues) {
+    const ranksDesc = [...numberValues].sort((a, b) => b - a); //sort in descending order
+    const high = ranksDesc[0]; //0 index is now the highest card
+    return {
+        name: "High Card",
+        ranks: ranksDesc,
+        display: `High Card (${high})`
+    };
+}
+
+
+function checkThreeOfAKind(numberValues) {
+    const { triples, pairs, quads } = checkDuplicates(numberValues); //create an object called triples from duplicates function
+    if (triples.length === 1 && pairs.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
+        const trip = Number(triples[0][0]);
+        return {
+            name: "Three of a Kind",
+            ranks: [trip],
+            display: `Three of a Kind (${trip})`
+        };
+    }
+    return null;
+}
+
+function checkFourOfAKind(numberValues) {
+    const { quads } = checkDuplicates(numberValues); //create an object called quads from duplicates function
+    if (quads.length === 1) { // if a quad was present from that function then return as such
+        return {
+            name: "Four of a Kind",
+            ranks: [Number(quads[0][0])],
+            display: `Four of a Kind (${quads[0][0]})`
+        };
+    }
+    return null;
+}
+
+function checkFullHouse(numberValues) {
+    const { pairs, triples } = checkDuplicates(numberValues); //create an object called quads from duplicates function
+    if (triples.length === 1 && pairs.length === 1) { // need a pair and a triple to constitute a full house
+        return {
+            name: "Full House",
+            ranks: [
+                Number(triples[0][0]),
+                Number(pairs[0][0])
+            ],
+            display: `Full House (${triples[0][0]} over ${pairs[0][0]})`
+        };
+    }
+    return null;
+}
+
 
 function checkFlush(handSuits, numberValues){
     //parse through suits array and suits array and look for 5 or more in sequence
