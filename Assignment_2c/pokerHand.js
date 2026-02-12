@@ -190,16 +190,16 @@ function checkStraights(numberValues){
     }
 }
 
-function checkRoyalFlush(checkFlush, numberValues){
+function checkRoyalFlush(handSuits, numberValues){
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
-    if (sorted[0] === 10 && consec.length === 4 && checkFlush()) {
-        const high = sorted[4];
+    const flushResult = checkFlush(handSuits, numberValues); //returns an object or null
+    if (sorted[0] === 10 && consec.length === 4 && flushResult) { //royal flush always starts at a jack (10) and flush has to be present
         return {
             name: "Royal Flush",
                 strength: 10,
-                ranks: [5,4,3,2,1],
-                display: "Royal Flush (${high} high"
+                ranks: [14,13,12,11,10],
+                display: "Royal Flushs"
                 };
         }
 }
