@@ -137,7 +137,7 @@ function checkDuplicates(numberValues){
 }
 
 function checkOnePair(numberValues) {
-    const { pairs } = checkDuplicates(numberValues); //create an object called triples from duplicates function
+    const { pairs, triples, quads } = checkDuplicates(numberValues); //create an object called triples from duplicates function
     if (pairs.length === 1 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
         const pairValue = Number(pairs[0][0]);
         return {
@@ -150,16 +150,16 @@ function checkOnePair(numberValues) {
 }
 
 function checkTwoPair(numberValues) {
-    const { pairs } = checkDuplicates(numberValues); //create an object called triples from duplicates function
-    if (pairs.length === 1 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
+    const { pairs, quads, triples } = checkDuplicates(numberValues); //create an object called triples from duplicates function
+    if (pairs.length === 2 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
         const p1 = Number(pairs[0][0]);
-        const p2 = Number(pairs[0][1]);
+        const p2 = Number(pairs[1][0]);
         const highPair = Math.max(p1, p2);
         const lowPair = Math.min(p1, p2);
         return {
             name: "Two Pairs",
-            ranks: [highPair. lowPair],
-            display: `Two Pairs (${highPair}s and ${lowPair}s})`
+            ranks: [highPair, lowPair],
+            display: `Two Pairs (${highPair}s and ${lowPair}s)`
         };
     }
     return null;
@@ -267,11 +267,12 @@ function checkStraights(numberValues){
                 display: "Straight 5 high"
                 }; //if yes then consider ace a 1 and return true
             }       
-    return null; //if no straights anywhere then return null (not false so it doesnt cause issues with evaluateHands)
     }
+    return null; //if no straights anywhere then return null (not false so it doesnt cause issues with evaluateHands)
 }
 
 function checkRoyalFlush(handSuits, numberValues){
+
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
     const flushResult = checkFlush(handSuits, numberValues); //returns an object or null
@@ -280,15 +281,45 @@ function checkRoyalFlush(handSuits, numberValues){
             name: "Royal Flush",
                 strength: 10,
                 ranks: [14,13,12,11,10],
-                display: "Royal Flushs"
+                display: "Royal Flush"
                 };
         }
+    return numberValues;;
 }
-
-
-
 
 document.getElementById("freshHand").addEventListener("click", getDeck);
 // #endregion
+// #region Hand Evaluation using all the other functions
+function evaluateHand(p_handSuits, p_numberValues) {
+   // top tier
+    const royal = checkRoyalFlush(p_handSuits, p_numberValues);
+    if (royal) return royal;
 
+    // TODO: add checkStraightFlush() once you write it
+    // const straightFlush = checkStraightFlush(p_handSuits, p_numberValues);
+    // if (straightFlush) return straightFlush;
+
+    const quads = checkFourOfAKind(p_numberValues);
+    if (quads) return quads;
+
+    const fullHouse = checkFullHouse(p_numberValues);
+    if (fullHouse) return fullHouse;
+
+    const flush = checkFlush(p_handSuits, p_numberValues);
+    if (flush) return flush;
+
+    const straight = checkStraights(p_numberValues);
+    if (straight) return straight;
+
+    const trips = checkThreeOfAKind(p_numberValues);
+    if (trips) return trips;
+
+    const twoPair = checkTwoPair(p_numberValues);
+    if (twoPair) return twoPair;
+
+    const pair = checkOnePair(p_numberValues);
+    if (pair) return pair;
+
+    return checkHighCard(p_numberValues); // always returns an object
+}
 //to do :create handEvaluation function that compares them all. Take out the checks from deck function and put them all there. Also begin refactoring and clean up css
