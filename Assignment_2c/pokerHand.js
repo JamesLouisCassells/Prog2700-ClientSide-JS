@@ -59,9 +59,9 @@ function getDeck() {
                 return parseInt(str)
             })  
             console.log("Number Values:", numberValues);
-            checkDuplicates(numberValues);
-            checkFlush(handSuits);
-            checkStraights(numberValues);
+            // checkDuplicates(numberValues);
+            // checkFlush(handSuits);
+            // checkStraights(numberValues);
              
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
@@ -99,11 +99,10 @@ function getDeck() {
                 return parseInt(str) //parse for numbers within string (easy part)
         })
             console.log("Number Values:", numberValues);
-            checkDuplicates(numberValues);
+            // checkDuplicates(numberValues);
             console.log("Suit Values:", handSuits)
-            checkFlush(handSuits);
-            checkStraights(numberValues);
-    
+            // checkFlush(handSuits);
+            // checkStraights(numberValues);
 
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
@@ -113,6 +112,7 @@ function getDeck() {
         });
     }
     //#endregion
+return (numberValues, handSuits)
 }
 // #region Part Four: Function algorithms to determine best hand
 function checkDuplicates(numberValues){
@@ -136,8 +136,7 @@ function checkDuplicates(numberValues){
     return {pairs, triples, quads};   //return makes this function useable for the comparison function to check values
 }
 
-
-function checkFlush(handSuits){
+function checkFlush(handSuits, numberValues){
     //parse through suits array and suits array and look for 5 or more in sequence
     let count = {};
     handSuits.forEach(suit => {
@@ -145,30 +144,58 @@ function checkFlush(handSuits){
             count[suit]++;
          } else {
             count[suit] = 1;
-            }
-    });
-
+            }});
     let flush = Object.entries(count);
     let one = flush.filter( entry => entry[1] === 5 ); //if four of the suits are the same
     console.log(one)
-    return one.length === flush; //if one is populated its truthy which means a flush was satisfied
+    //above checks if theres a flush, below allowed me to return the values
+    const isFlush = one.length > 0; //if one is populated then theres a flush and it is truthy
+    if (!isFlush) return null;
+    const ranksDesc = [...numberValues].sort((a,b) => b - a);
+    
+    return { //return an object with the hand type, its strength and the cards themselves
+    name: "Flush",
+    strength: 6, //future proofing for against another hand
+    ranks: ranksDesc,
+    display: `Flush (${ranksDesc.join(" ")})`
+    };
+   
 }
+
 function checkStraights(numberValues){
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
-    if (consec.length === 4) return true;
+    if (consec.length === 4) { 
+        const high = sorted[4];
+        return {
+            name: "Straight",
+            strength: 5,
+            ranks: [high, high-1, high-2, high-3, high-4],
+            display: 'Straight (${high} high'
+            };
+    }
    
-
     //solution for ace being 1 or 14 with low straights
     if (sorted.includes(14)) { //if the sorted array has an ace
         let aceLow = sorted.map(v => v === 14 ? 1 : v).sort((a, b) => a - b); //create a mew array and treat the ace as value 1 or 14 with ternary operator and check for 1-5
         consec = aceLow.filter((value, i) => aceLow[i + 1] === value + 1);
-        if (consec.length === 4) return true; //if yes then consider ace a 1 and return true
+        if (consec.length === 4) {
+            const high = sorted[4];
+            return {
+                name: "Straight",
+                strength: 5,
+                ranks: [5,4,3,2,1],
+                display: "Straight (${high} high"
+                }; //if yes then consider ace a 1 and return true
+            }       
+    return false; //if no straights anywhere then return false
     }
-    return false;
 }
 
-function checkRoyalFlush(){
+function checkRoyalFlush(checkFlush, numberValues){
+    let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
+    let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
+    if (sorted[0] === 10 && consec.length === 4 && checkFlush()) return true;
     //explicitly check for royal flush but also flush
     //return the cards and an award
 }
