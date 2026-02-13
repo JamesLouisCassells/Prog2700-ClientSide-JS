@@ -1,35 +1,78 @@
-/* Part Three: Stylising Webpage */
-body {
-  font-family: Arial, sans-serif;
-  background: #2c023f;
-  color: white;
-  text-align: center;
-  padding: 40px;
+/* ---------- Base page ---------- */
+
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
-button {
-  background: #dcf094;
-  border: none;
-  padding: 12px 18px;
-  font-size: 20px;
-  font-weight:bold;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 20px;
+body {
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic", "Noto Sans JP", Arial, sans-serif;
+  background: #f7f3ea;   /* warm paper */
+  color: #1a1a1a;        /* ink */
+  text-align: center;
+  padding: 40px 16px;
 }
+
+/* ---------- Title ---------- */
+
+h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 18px;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- Button ---------- */
+
+button {
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 2px solid #1a1a1a;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #b11d1a;   /* red accent */
+  color: #b11d1a;
+}
+
+/* ---------- Card layout ---------- */
 
 #poker {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 20px;
 }
 
 #poker img {
-  width: 200px;
-  border-radius: 8px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  width: 170px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
 }
 
-.card { margin: 6px; border-radius: 10px; }
-.card.highlight { outline: 4px solid gold; }
+/* ---------- Result box ---------- */
+
+#handResult {
+  margin: 18px auto 0;
+  max-width: 560px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border-left: 6px solid #b11d1a;  /* simple Japanese stamp accent */
+  border-radius: 6px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ---------- Desktop tweak ---------- */
+
+@media (min-width: 900px) {
+  #poker img {
+    width: 190px;
+  }
+}

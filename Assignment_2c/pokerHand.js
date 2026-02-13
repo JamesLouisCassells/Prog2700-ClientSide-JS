@@ -21,6 +21,22 @@ let playingDeck = null;
 //“I noticed I was repeating the same parsing code in two places, so I moved it into a function called parseHand. 
 // It takes the API’s cards array and returns the suits and numeric values in the format my evaluator needs. 
 // That way if I change the parsing logic later, I only change it once.”
+const bgColours = [
+  "#f7f3ea", // warm paper
+  "#efe8db",
+  "#f2efe6",
+  "#ece6dc",
+  "#f5efe4"
+];
+let colourIndex = 0;
+
+function changeBackground() {
+  document.body.style.background = bgColours[colourIndex];
+  colourIndex = (colourIndex + 1) % bgColours.length;
+}
+
+
+
 function parseHand(p_cards) {
   const p_handSuits = p_cards.map(function(card) {
     return card.suit;
@@ -32,14 +48,13 @@ function parseHand(p_cards) {
     if (card.value === "KING") return 13;
     if (card.value === "ACE") return 14;
     return parseInt(card.value, 10);
-  });
-
+    });
   return { p_handSuits, p_numberValues };
 }
 
-
 function getDeck() {
     //#region Assignment Part One/Two: FIRST TIME CLICKING: initial deck fetch
+    changeBackground();
     if (playingDeck === null){ //if no deck generated yet (else use the same deck, shuffle and draw 5 cards)
         fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1') //api deck generator taking 1 deck only
         .then(response => response.json()) //convert response from api to js readable json
@@ -56,13 +71,7 @@ function getDeck() {
         console.log("parsed suits", p_handSuits);
         console.log("parsed numbers", p_numberValues);
 
-
         const bestHand = evaluateHand(p_handSuits, p_numberValues);
-        //console.log("Number Values:", numberValues);
-        // checkDuplicates(numberValues);
-        // checkFlush(handSuits);
-        // checkStraights(numberValues);
-        
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
             //arrow function, map method to iterate through the array of 5 cards and print them
@@ -84,13 +93,10 @@ function getDeck() {
         .then(response => response.json())
         .then(cardData => {
             const { p_handSuits, p_numberValues } = parseHand(cardData.cards);
-
             const bestHand = evaluateHand(p_handSuits, p_numberValues);
             document.getElementById("handResult").textContent = bestHand.display;
-
             console.log("Number Values:", p_numberValues);
             console.log("Suit Values:", p_handSuits);
-
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
             //I use an arrow function on the result the API gave me (an array of card objects). 
@@ -171,7 +177,6 @@ function checkHighCard(numberValues) {
         display: `High Card (${rankToName(high)})`
     };
 }
-
 
 function checkThreeOfAKind(numberValues) {
     const { triples, pairs, quads } = checkDuplicates(numberValues); //create an object called triples from duplicates function
