@@ -17,12 +17,26 @@
 
  //#region globals
 let playingDeck = null;
-let handValues = [];
-let handSuits = [];
-let numberValues = [];
-// const values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "JACK", "QUEEN", "KING", "ACE"]
-// const suits = ["HEARTS", "CLUBS", "SPADES", "DIAMONDS"]
 //#endregion
+//“I noticed I was repeating the same parsing code in two places, so I moved it into a function called parseHand. 
+// It takes the API’s cards array and returns the suits and numeric values in the format my evaluator needs. 
+// That way if I change the parsing logic later, I only change it once.”
+function parseHand(p_cards) {
+  const p_handSuits = p_cards.map(function(card) {
+    return card.suit;
+  });
+
+  const p_numberValues = p_cards.map(function(card) {
+    if (card.value === "JACK") return 11;
+    if (card.value === "QUEEN") return 12;
+    if (card.value === "KING") return 13;
+    if (card.value === "ACE") return 14;
+    return parseInt(card.value, 10);
+  });
+
+  return { p_handSuits, p_numberValues };
+}
+
 
 function getDeck() {
     //#region Assignment Part One/Two: FIRST TIME CLICKING: initial deck fetch
@@ -37,34 +51,18 @@ function getDeck() {
         .then(response => response.json()) //convert response to json
         .then(cardData => {
         console.log("Card data:", cardData); //print the data to log to check it
-        handValues = cardData.cards.map(card => card.value);//extracts existing card value data and saves it
-        handSuits = cardData.cards.map(card => card.suit); //same for suit data
-        console.log("saved handvalues", handValues); 
-        console.log("saved handsuits", handSuits);
+        
+        const { p_handSuits, p_numberValues } = parseHand(cardData.cards);
+        console.log("parsed suits", p_handSuits);
+        console.log("parsed numbers", p_numberValues);
 
-        //Using map and parseInt to convert json stored face values to trackable ints ("JACK" to 11)
-        handValues = cardData.cards.map(card => card.value); //extracts existing card value data and saves it
-            handSuits = cardData.cards.map(card => card.suit); //same for suit data
-            console.log("Card data:", cardData);
-            numberValues = handValues.map(str => { //Anonymous function which Loops through handvalues and assigns number value to face cards
-            if (str === "JACK")
-                return 11;
-            else if (str === "QUEEN")
-                return 12;
-            else if (str === "KING")
-                return 13;
-            else if (str === "ACE")
-                return 14;
-            else //If it isnt a face card then converts string to int with parseInt
-                return parseInt(str)
-            })  
-            console.log("Number Values:", numberValues);
-            // checkDuplicates(numberValues);
-            // checkFlush(handSuits);
-            // checkStraights(numberValues);
 
-            const bestHand = evaluateHand(handSuits, numberValues);
-             
+        const bestHand = evaluateHand(p_handSuits, p_numberValues);
+        //console.log("Number Values:", numberValues);
+        // checkDuplicates(numberValues);
+        // checkFlush(handSuits);
+        // checkStraights(numberValues);
+        
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
             //arrow function, map method to iterate through the array of 5 cards and print them
@@ -85,31 +83,13 @@ function getDeck() {
 
         .then(response => response.json())
         .then(cardData => {
-            handValues = cardData.cards.map(card => card.value); //extracts existing card value data and saves it
-            handSuits = cardData.cards.map(card => card.suit); //same for suit data
-            console.log("Card data:", cardData);
-            
-            //converting values into numeric, trackable ints
-            numberValues = handValues.map(str => {
-            if (str === "JACK")
-                return 11;
-            else if (str === "QUEEN")
-                return 12;
-            else if (str === "KING")
-                return 13;
-            else if (str === "ACE")
-                return 14;
-            else 
-                return parseInt(str) //parse for numbers within string (easy part)
-        })
-            console.log("Number Values:", numberValues);
-            // checkDuplicates(numberValues);
-            console.log("Suit Values:", handSuits)
-            // checkFlush(handSuits);
-            // checkStraights(numberValues);
+            const { p_handSuits, p_numberValues } = parseHand(cardData.cards);
 
-            const bestHand = evaluateHand(handSuits, numberValues);
-            
+            const bestHand = evaluateHand(p_handSuits, p_numberValues);
+            document.getElementById("handResult").textContent = bestHand.display;
+
+            console.log("Number Values:", p_numberValues);
+            console.log("Suit Values:", p_handSuits);
 
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
@@ -121,7 +101,6 @@ function getDeck() {
         });
     }
     //#endregion
-return {numberValues, handSuits};
 }
 // Function to map card strength back to face value for UI
 function rankToName(value) {
@@ -201,7 +180,7 @@ function checkThreeOfAKind(numberValues) {
         return {
             name: "Three of a Kind",
             ranks: [trip],
-            display: `Three of a Kind (${rankToName(trip)})`
+            display: `Three of a Kind (${rankToName(trip)}s)`
         };
     }
     return null;
