@@ -62,11 +62,15 @@ function getDeck() {
             // checkDuplicates(numberValues);
             // checkFlush(handSuits);
             // checkStraights(numberValues);
+
+            const bestHand = evaluateHand(handSuits, numberValues);
              
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
             //arrow function, map method to iterate through the array of 5 cards and print them
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
+
+            document.getElementById("handResult").textContent = bestHand.display;
         });} 
     //#endregion
     //#region Part Two:  SECOND TIME CLICKING (Card pack already assigned)
@@ -104,16 +108,30 @@ function getDeck() {
             // checkFlush(handSuits);
             // checkStraights(numberValues);
 
+            const bestHand = evaluateHand(handSuits, numberValues);
+            
+
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
             //I use an arrow function on the result the API gave me (an array of card objects). 
             // I use map to iterate through each card and convert it to an img html string using the cards url
             // Finally join is used to combine those strings into one block of html and thats put into the block of html at the poker div
+
+            document.getElementById("handResult").textContent = bestHand.display;
         });
     }
     //#endregion
-return (numberValues, handSuits)
+return {numberValues, handSuits};
 }
+// Function to map card strength back to face value for UI
+function rankToName(value) {
+    if (value === 11) return "Jack";
+    if (value === 12) return "Queen";
+    if (value === 13) return "King";
+    if (value === 14) return "Ace";
+    return value.toString();
+}
+
 // #region Part Four: Function algorithms to determine best hand
 function checkDuplicates(numberValues){
     // populate a new object with key value pairs representing the value and the count of how many times it showed [["7", 2]] etc
@@ -136,14 +154,14 @@ function checkDuplicates(numberValues){
     return {pairs, triples, quads};   //return makes this function useable for the comparison function to check values
 }
 
-function checkOnePair(numberValues) {
+function checkOnePair(numberValues) { 
     const { pairs, triples, quads } = checkDuplicates(numberValues); //create an object called triples from duplicates function
     if (pairs.length === 1 && triples.length === 0 && quads.length === 0) { // ensures a full house wont be triggered for three of a kind
         const pairValue = Number(pairs[0][0]);
         return {
             name: "One Pair",
             ranks: [pairValue],
-            display: `One Pair (${pairValue})`
+            display: `One Pair (${rankToName(pairValue)}s)`
         };
     }
     return null;
@@ -159,7 +177,7 @@ function checkTwoPair(numberValues) {
         return {
             name: "Two Pairs",
             ranks: [highPair, lowPair],
-            display: `Two Pairs (${highPair}s and ${lowPair}s)`
+            display: `Two Pairs (${rankToName(highPair)}s and ${rankToName(lowPair)}s)`
         };
     }
     return null;
@@ -171,7 +189,7 @@ function checkHighCard(numberValues) {
     return {
         name: "High Card",
         ranks: ranksDesc,
-        display: `High Card (${high})`
+        display: `High Card (${rankToName(high)})`
     };
 }
 
@@ -183,7 +201,7 @@ function checkThreeOfAKind(numberValues) {
         return {
             name: "Three of a Kind",
             ranks: [trip],
-            display: `Three of a Kind (${trip})`
+            display: `Three of a Kind (${rankToName(trip)})`
         };
     }
     return null;
@@ -195,7 +213,8 @@ function checkFourOfAKind(numberValues) {
         return {
             name: "Four of a Kind",
             ranks: [Number(quads[0][0])],
-            display: `Four of a Kind (${quads[0][0]})`
+            display: `Four of a Kind (${rankToName(Number(quads[0][0]))}s)` //convert to a number so it doesnt get squished during rankToName conversion
+
         };
     }
     return null;
@@ -210,7 +229,8 @@ function checkFullHouse(numberValues) {
                 Number(triples[0][0]),
                 Number(pairs[0][0])
             ],
-            display: `Full House (${triples[0][0]} over ${pairs[0][0]})`
+            display: `Full House (${rankToName(Number(triples[0][0]))} over ${rankToName(Number(pairs[0][0]))})` //explicit number conversion before passing it to rankToName otherwise "12" === 12 is false 
+
         };
     }
     return null;
@@ -238,7 +258,7 @@ function checkFlush(handSuits, numberValues){
     name: "Flush",
     strength: 6, //future proofing for against another hand
     ranks: ranksDesc,
-    display: `Flush (${ranksDesc.join(" ")})`
+    display: `Flush (${ranksDesc.map(rankToName).join(" ")})`
     };
    
 }
@@ -252,7 +272,7 @@ function checkStraights(numberValues){
             name: "Straight",
             strength: 5,
             ranks: [high, high-1, high-2, high-3, high-4],
-            display: `Straight (${high} high)`
+            display: `Straight (${rankToName(high)} high)`
             };
     }
     //solution for ace being 1 or 14 with low straights
@@ -263,8 +283,8 @@ function checkStraights(numberValues){
             return {
                 name: "Straight",
                 strength: 5,
-                ranks: [5,4,3,2,1],
-                display: "Straight 5 high"
+                ranks: [5,4,3,2,14], //easier to keep ace as 14 for the purposes of simply showing the card
+                display: `Straight (${rankToName(5)} high)`
                 }; //if yes then consider ace a 1 and return true
             }       
     }
@@ -284,10 +304,10 @@ function checkRoyalFlush(handSuits, numberValues){
                 display: "Royal Flush"
                 };
         }
-    return numberValues;;
+    return null;
 }
 
-document.getElementById("freshHand").addEventListener("click", getDeck);
+
 // #endregion
 // #region Hand Evaluation using all the other functions
 function evaluateHand(p_handSuits, p_numberValues) {
@@ -322,4 +342,4 @@ function evaluateHand(p_handSuits, p_numberValues) {
 
     return checkHighCard(p_numberValues); // always returns an object
 }
-//to do :create handEvaluation function that compares them all. Take out the checks from deck function and put them all there. Also begin refactoring and clean up css
+document.getElementById("freshHand").addEventListener("click", getDeck);
