@@ -15,28 +15,13 @@
 
  //#endregion
 
- //#region globals
-let playingDeck = null;
-//#endregion
+(() => { //wrapping entire code block in iife so information is private and not global
+    "use strict";
+    let playingDeck = null;
+
 //“I noticed I was repeating the same parsing code in two places, so I moved it into a function called parseHand. 
 // It takes the API’s cards array and returns the suits and numeric values in the format my evaluator needs. 
 // That way if I change the parsing logic later, I only change it once.”
-const bgColours = [
-  "#f7f3ea", // warm paper
-  "#efe8db",
-  "#f2efe6",
-  "#ece6dc",
-  "#f5efe4"
-];
-let colourIndex = 0;
-
-function changeBackground() {
-  document.body.style.background = bgColours[colourIndex];
-  colourIndex = (colourIndex + 1) % bgColours.length;
-}
-
-
-
 function parseHand(p_cards) {
   const p_handSuits = p_cards.map(function(card) {
     return card.suit;
@@ -54,7 +39,6 @@ function parseHand(p_cards) {
 
 function getDeck() {
     //#region Assignment Part One/Two: FIRST TIME CLICKING: initial deck fetch
-    changeBackground();
     if (playingDeck === null){ //if no deck generated yet (else use the same deck, shuffle and draw 5 cards)
         fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1') //api deck generator taking 1 deck only
         .then(response => response.json()) //convert response from api to js readable json
@@ -66,12 +50,12 @@ function getDeck() {
         .then(response => response.json()) //convert response to json
         .then(cardData => {
         console.log("Card data:", cardData); //print the data to log to check it
-        
-        const { p_handSuits, p_numberValues } = parseHand(cardData.cards);
+        const { p_handSuits, p_numberValues } = parseHand(cardData.cards); //destructuring: taking handsuit and number properties from cards object and turning them into variables
         console.log("parsed suits", p_handSuits);
         console.log("parsed numbers", p_numberValues);
 
-        const bestHand = evaluateHand(p_handSuits, p_numberValues);
+        const bestHand = evaluateHand(p_handSuits, p_numberValues); //run final determining function for best hand
+
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
             //arrow function, map method to iterate through the array of 5 cards and print them
@@ -243,8 +227,23 @@ function checkFlush(handSuits, numberValues){
     strength: 6, //future proofing for against another hand
     ranks: ranksDesc,
     display: `Flush (${ranksDesc.map(rankToName).join(" ")})`
-    };
-   
+    };  
+}
+
+function checkStraightFlush(handSuits, numberValues){
+    const flushResult = checkFlush(handSuits, numberValues);
+  if (!flushResult) return null;
+
+  const straightResult = checkStraights(numberValues);
+  if (!straightResult) return null;
+
+  return {
+    name: "Straight Flush",
+    strength: 9,
+    ranks: straightResult.ranks,
+    display: `Straight Flush (${rankToName(straightResult.ranks[0])} high)`
+  };
+
 }
 
 function checkStraights(numberValues){
@@ -290,18 +289,16 @@ function checkRoyalFlush(handSuits, numberValues){
         }
     return null;
 }
-
-
 // #endregion
-// #region Hand Evaluation using all the other functions
+
+// #innerregion Hand Evaluation using all the other functions
 function evaluateHand(p_handSuits, p_numberValues) {
    // top tier
     const royal = checkRoyalFlush(p_handSuits, p_numberValues);
     if (royal) return royal;
 
-    // TODO: add checkStraightFlush() once you write it
-    // const straightFlush = checkStraightFlush(p_handSuits, p_numberValues);
-    // if (straightFlush) return straightFlush;
+    const straightFlush = checkStraightFlush(p_handSuits, p_numberValues);
+    if (straightFlush) return straightFlush;
 
     const quads = checkFourOfAKind(p_numberValues);
     if (quads) return quads;
@@ -327,3 +324,100 @@ function evaluateHand(p_handSuits, p_numberValues) {
     return checkHighCard(p_numberValues); // always returns an object
 }
 document.getElementById("freshHand").addEventListener("click", getDeck);
+document.getElementById("techCheck").addEventListener("click", runTechCheck);
+
+// innerregion testing for rubric
+function extractCardsFromTestResponse(p_data) {
+  if (Array.isArray(p_data)) return p_data;
+  if (p_data && Array.isArray(p_data.cards)) return p_data.cards;
+  if (p_data && Array.isArray(p_data.hand)) return p_data.hand;
+
+  if (p_data && typeof p_data === "object") {
+    for (const key in p_data) {
+      if (Array.isArray(p_data[key])) return p_data[key];
+    }
+  }
+  return null;
+}
+
+function runHandFromEndpoint(p_url) {
+  fetch(p_url)
+    .then(r => r.json())
+    .then(data => {
+      const cards = extractCardsFromTestResponse(data);
+
+      if (!cards || cards.length !== 5) {
+        console.log("Unexpected test response:", data);
+        throw new Error("Test endpoint did not return 5 cards in an expected format.");
+      }
+
+      const { p_handSuits, p_numberValues } = parseHand(cards);
+      const bestHand = evaluateHand(p_handSuits, p_numberValues);
+
+      const hand = document.getElementById("poker");
+      hand.innerHTML = cards
+        .map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`)
+        .join("");
+
+      document.getElementById("handResult").textContent = bestHand.display;
+    })
+    .catch(err => console.error(err));
+}
+
+function evaluateEndpoint(p_url) {
+  return fetch(p_url)
+    .then(r => r.json())
+    .then(data => {
+      const cards = extractCardsFromTestResponse(data);
+
+      if (!cards || cards.length !== 5) {
+        console.log("Unexpected test response:", data);
+        throw new Error("Bad test response from endpoint");
+      }
+
+      const { p_handSuits, p_numberValues } = parseHand(cards);
+      return evaluateHand(p_handSuits, p_numberValues); // returns your hand object
+    });
+}
+
+
+function runTechCheck() {
+  const resultsDiv = document.getElementById("testResults");
+
+  const tests = [
+    { name: "Royal Flush", url: "https://prog2700.onrender.com/pokerhandtest/royalflush" },
+    { name: "Straight Flush", url: "https://prog2700.onrender.com/pokerhandtest/straightflush" },
+    { name: "Four of a Kind", url: "https://prog2700.onrender.com/pokerhandtest/fourofakind" },
+    { name: "Full House", url: "https://prog2700.onrender.com/pokerhandtest/fullhouse" },
+    { name: "Flush", url: "https://prog2700.onrender.com/pokerhandtest/flush" },
+    { name: "Straight", url: "https://prog2700.onrender.com/pokerhandtest/straight" },
+    { name: "Three of a Kind", url: "https://prog2700.onrender.com/pokerhandtest/threeofakind" },
+    { name: "Two Pairs", url: "https://prog2700.onrender.com/pokerhandtest/twopair" },
+    { name: "One Pair", url: "https://prog2700.onrender.com/pokerhandtest/onepair" },
+    { name: "High Card", url: "https://prog2700.onrender.com/pokerhandtest/highcard" }
+  ];
+
+  // clear + header
+  resultsDiv.innerHTML = "<h3>Tech Check</h3>";
+
+  tests.forEach(t => {
+    // placeholder row while loading
+    const row = document.createElement("div");
+    row.textContent = `${t.name}: checking...`;
+    resultsDiv.appendChild(row);
+
+    evaluateEndpoint(t.url)
+      .then(bestHand => {
+        const pass = bestHand.name === t.name;
+        row.textContent = `${t.name}: ${pass ? "✅ PASS" : "❌ FAIL"} (got: ${bestHand.name})`;
+      })
+      .catch(err => {
+        row.textContent = `${t.name}: ❌ ERROR (${err.message})`;
+      });
+  });
+}
+// #endinnerregion
+
+window.runHandFromEndpoint = runHandFromEndpoint;
+
+})();
