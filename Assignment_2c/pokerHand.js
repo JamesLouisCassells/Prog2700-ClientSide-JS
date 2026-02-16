@@ -19,9 +19,9 @@
     "use strict";
     let playingDeck = null;
 
-//“I noticed I was repeating the same parsing code in two places, so I moved it into a function called parseHand. 
+//I noticed I was repeating the same parsing code in two places, so I moved it into a function called parseHand. 
 // It takes the API’s cards array and returns the suits and numeric values in the format my evaluator needs. 
-// That way if I change the parsing logic later, I only change it once.”
+// That way if I change the parsing logic later, I only change it once.
 function parseHand(p_cards) {
   const p_handSuits = p_cards.map(function(card) {
     return card.suit;
@@ -43,7 +43,7 @@ function getDeck() {
         fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1') //api deck generator taking 1 deck only
         .then(response => response.json()) //convert response from api to js readable json
         .then(deckData => { //once i have that json, use an anonymous function to:
-            console.log("Deck data:", deckData); //this shows the json array position i needed
+            // console.log("Deck data:", deckData); //this shows the json array position i needed
             playingDeck = deckData.deck_id; // Assigning specific deckId to a variable 
             console.log("Saved deck id:", playingDeck); //checking what the id was.
             return fetch(`https://deckofcardsapi.com/api/deck/${playingDeck}/draw/?count=5`);}) //Saves and punches in playingDeck variable to complete url || Draws 5 cards
@@ -51,18 +51,24 @@ function getDeck() {
         .then(cardData => {
         console.log("Card data:", cardData); //print the data to log to check it
         const { p_handSuits, p_numberValues } = parseHand(cardData.cards); //destructuring: taking handsuit and number properties from cards object and turning them into variables
-        console.log("parsed suits", p_handSuits);
-        console.log("parsed numbers", p_numberValues);
-
+        // console.log("parsed suits", p_handSuits);
+        // console.log("parsed numbers", p_numberValues);
+        
         const bestHand = evaluateHand(p_handSuits, p_numberValues); //run final determining function for best hand
-
+        
             //Makes those cards appear on the webpage by linking them to the html
             const hand = document.getElementById('poker'); //Assigning result to html so it appears on the web page
             //arrow function, map method to iterate through the array of 5 cards and print them
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
 
             document.getElementById("handResult").textContent = bestHand.display;
-        });} 
+        })
+        .catch(err => {
+            console.error("Deck API failed:", err);
+            document.getElementById("handResult").textContent =
+            "Error loading cards. Please try again.";
+        });
+    }
     //#endregion
     //#region Part Two:  SECOND TIME CLICKING (Card pack already assigned)
     else {
@@ -79,8 +85,8 @@ function getDeck() {
             const { p_handSuits, p_numberValues } = parseHand(cardData.cards);
             const bestHand = evaluateHand(p_handSuits, p_numberValues);
             document.getElementById("handResult").textContent = bestHand.display;
-            console.log("Number Values:", p_numberValues);
-            console.log("Suit Values:", p_handSuits);
+            // console.log("Number Values:", p_numberValues);
+            // console.log("Suit Values:", p_handSuits);
             const hand = document.getElementById('poker'); //populating poker div html with the cardData array information (5 cards)
             hand.innerHTML = cardData.cards.map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`).join("");
             //I use an arrow function on the result the API gave me (an array of card objects). 
@@ -88,12 +94,18 @@ function getDeck() {
             // Finally join is used to combine those strings into one block of html and thats put into the block of html at the poker div
 
             document.getElementById("handResult").textContent = bestHand.display;
+       })
+       .catch(err => {
+        console.error("Shuffle/draw failed:", err);
+        document.getElementById("handResult").textContent =
+        "Error drawing a new hand. Please try again.";
         });
     }
     //#endregion
 }
-// Function to map card strength back to face value for UI
+
 function rankToName(value) {
+    // Function to map card strength back to face value for UI
     if (value === 11) return "Jack";
     if (value === 12) return "Queen";
     if (value === 13) return "King";
@@ -117,9 +129,9 @@ function checkDuplicates(numberValues){
     let pairs = duplicates.filter( entry => entry[1] === 2 ); //filter through duplicates 2d array -- keep where the count shows duplicates anount -- store result in pairs
     let triples = duplicates.filter( entry => entry[1] === 3 ); // three of a kind
     let quads = duplicates.filter( entry => entry[1] === 4 ); //four of a kind
-    console.log(pairs);
-    console.log(triples);
-    console.log(quads);
+    console.log("Pairs: ", pairs);
+    // console.log("Triples: ", triples);
+    // console.log("Quads: ", quads);
     return {pairs, triples, quads};   //return makes this function useable for the comparison function to check values
 }
 
@@ -182,13 +194,12 @@ function checkFourOfAKind(numberValues) {
             name: "Four of a Kind",
             ranks: [Number(quads[0][0])],
             display: `Four of a Kind (${rankToName(Number(quads[0][0]))}s)` //convert to a number so it doesnt get squished during rankToName conversion
-
         };
     }
     return null;
 }
 
-function checkFullHouse(numberValues) {
+function checkFullHouse(numberValues) { //all pairs/trips
     const { pairs, triples } = checkDuplicates(numberValues); //create an object called quads from duplicates function
     if (triples.length === 1 && pairs.length === 1) { // need a pair and a triple to constitute a full house
         return {
@@ -198,14 +209,12 @@ function checkFullHouse(numberValues) {
                 Number(pairs[0][0])
             ],
             display: `Full House (${rankToName(Number(triples[0][0]))} over ${rankToName(Number(pairs[0][0]))})` //explicit number conversion before passing it to rankToName otherwise "12" === 12 is false 
-
-        };
+     };
     }
     return null;
 }
 
-
-function checkFlush(handSuits, numberValues){
+function checkFlush(handSuits, numberValues){ //5 of a suit
     //parse through suits array and suits array and look for 5 or more in sequence
     let count = {};
     handSuits.forEach(suit => {
@@ -216,7 +225,7 @@ function checkFlush(handSuits, numberValues){
             }});
     let flush = Object.entries(count);
     let one = flush.filter( entry => entry[1] === 5 ); //if four of the suits are the same
-    console.log(one)
+    // console.log(one)
     //above checks if theres a flush, below allowed me to return the values
     const isFlush = one.length > 0; //if one is populated then theres a flush and it is truthy
     if (!isFlush) return null;
@@ -230,7 +239,7 @@ function checkFlush(handSuits, numberValues){
     };  
 }
 
-function checkStraightFlush(handSuits, numberValues){
+function checkStraightFlush(handSuits, numberValues){ //5 in a row, suited
     const flushResult = checkFlush(handSuits, numberValues);
   if (!flushResult) return null;
 
@@ -246,10 +255,10 @@ function checkStraightFlush(handSuits, numberValues){
 
 }
 
-function checkStraights(numberValues){
+function checkStraights(numberValues){ //5 in a row
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
-    if (consec.length === 4) { 
+    if (consec.length === 4) { //needs to be 4 consecutive for a straight
         const high = sorted[4];
         return {
             name: "Straight",
@@ -274,7 +283,7 @@ function checkStraights(numberValues){
     return null; //if no straights anywhere then return null (not false so it doesnt cause issues with evaluateHands)
 }
 
-function checkRoyalFlush(handSuits, numberValues){
+function checkRoyalFlush(handSuits, numberValues){ //suited 10-A
 
     let sorted = [...numberValues].sort((a, b) => a - b); //creates a copy of the numberValues and sorts it by numeric value. Copy b/c sort mutates the original
     let consec = sorted.filter((value, i) => sorted[i + 1] === value + 1) //filter parses sorted, if the value at position 1 matches position 2 it adds them to a new array and checks the next value
@@ -291,7 +300,7 @@ function checkRoyalFlush(handSuits, numberValues){
 }
 // #endregion
 
-// #innerregion Hand Evaluation using all the other functions
+
 function evaluateHand(p_handSuits, p_numberValues) {
    // top tier
     const royal = checkRoyalFlush(p_handSuits, p_numberValues);
@@ -326,12 +335,11 @@ function evaluateHand(p_handSuits, p_numberValues) {
 document.getElementById("freshHand").addEventListener("click", getDeck);
 document.getElementById("techCheck").addEventListener("click", runTechCheck);
 
-// innerregion testing for rubric
+//testing for rubric
 function extractCardsFromTestResponse(p_data) {
   if (Array.isArray(p_data)) return p_data;
   if (p_data && Array.isArray(p_data.cards)) return p_data.cards;
   if (p_data && Array.isArray(p_data.hand)) return p_data.hand;
-
   if (p_data && typeof p_data === "object") {
     for (const key in p_data) {
       if (Array.isArray(p_data[key])) return p_data[key];
@@ -350,15 +358,12 @@ function runHandFromEndpoint(p_url) {
         console.log("Unexpected test response:", data);
         throw new Error("Test endpoint did not return 5 cards in an expected format.");
       }
-
       const { p_handSuits, p_numberValues } = parseHand(cards);
       const bestHand = evaluateHand(p_handSuits, p_numberValues);
-
       const hand = document.getElementById("poker");
       hand.innerHTML = cards
         .map(card => `<img src="${card.image}" alt="${card.value} of ${card.suit}">`)
         .join("");
-
       document.getElementById("handResult").textContent = bestHand.display;
     })
     .catch(err => console.error(err));
@@ -369,17 +374,14 @@ function evaluateEndpoint(p_url) {
     .then(r => r.json())
     .then(data => {
       const cards = extractCardsFromTestResponse(data);
-
       if (!cards || cards.length !== 5) {
         console.log("Unexpected test response:", data);
         throw new Error("Bad test response from endpoint");
       }
-
       const { p_handSuits, p_numberValues } = parseHand(cards);
       return evaluateHand(p_handSuits, p_numberValues); // returns your hand object
     });
 }
-
 
 function runTechCheck() {
   const resultsDiv = document.getElementById("testResults");
@@ -416,8 +418,5 @@ function runTechCheck() {
       });
   });
 }
-// #endinnerregion
-
 window.runHandFromEndpoint = runHandFromEndpoint;
-
 })();
