@@ -13,7 +13,7 @@
 
     // TODO: ADD CODE TO COMPLETE THE FUNCTION HERE...
     // you'll get an error notification in the console until the function is completed correctly
-
+    console.log(codons);
     return codons;
   }
   
