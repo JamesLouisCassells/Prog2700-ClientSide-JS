@@ -7,13 +7,10 @@
   var extractCodonsFromDNA = function(dnaSequence)
   {
     var codons = [];
-    for (let i = 0; i = dnaSequence.length; i+3) {
-      codons.push(dnaSequence.split(i, i + 3));
-    }
 
     // TODO: ADD CODE TO COMPLETE THE FUNCTION HERE...
     // you'll get an error notification in the console until the function is completed correctly
-    console.log(codons);
+
     return codons;
   }
   
