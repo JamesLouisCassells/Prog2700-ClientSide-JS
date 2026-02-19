@@ -127,9 +127,12 @@
         return olderCast;
     }
     
-    function getTotalRuntimeMinutesExcludingSeasonSix(){
-        
-        return 0;
+    function getTotalRuntimeMinutesExcludingSeasonSix(json){
+        const episodes = json._embedded.episodes; // save episode location
+        const runTimeMinusSix = episodes
+            .filter(episode => episode.season !== 6)
+            .reduce((total, episode) => total + episode.runtime, 0);
+        return runTimeMinusSix;
     }
 
     function getFirstFourSeasons(){
