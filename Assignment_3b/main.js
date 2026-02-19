@@ -135,8 +135,16 @@
         return runTimeMinusSix;
     }
 
-    function getFirstFourSeasons(){
-        return 0;
+      //8 - Create a function called getFirstFourSeasons that gets the episodes for the first four seasons 
+        //    but only return an array of JSON objects containing the season number and episode name
+    function getFirstFourSeasons(json){
+        const episodes = json._embedded.episodes; // save episode location
+        const hotel  = episodes
+        .filter(episode => episode.season <= 4) //filter all seasons up and including to four
+        .map(episode => ({ //first time mapping an object!
+            season: episode.season, //map first key value pair
+            name:  episode.name}));
+        return hotel; //return object (its big!)
     }
 
     function getEpisodeTallyBySeason() {
