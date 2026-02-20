@@ -130,13 +130,11 @@
     function getTotalRuntimeMinutesExcludingSeasonSix(json){
         const episodes = json._embedded.episodes; // save episode location
         const runTimeMinusSix = episodes
-            .filter(episode => episode.season !== 6)
-            .reduce((total, episode) => total + episode.runtime, 0);
+            .filter(episode => episode.season !== 6) //as long as it isnt season 6
+            .reduce((total, episode) => total + episode.runtime, 0); //reduce it the other seasons, accumulate total runtime
         return runTimeMinusSix;
     }
 
-      //8 - Create a function called getFirstFourSeasons that gets the episodes for the first four seasons 
-        //    but only return an array of JSON objects containing the season number and episode name
     function getFirstFourSeasons(json){
         const episodes = json._embedded.episodes; // save episode location
         const hotel  = episodes
@@ -146,13 +144,34 @@
             name:  episode.name}));
         return hotel; //return object (its big!)
     }
+   
+function getEpisodeTallyBySeason(json) {
+    const episodes = json._embedded.episodes;
+    const tally = episodes.reduce((total, episode) => { //reduce to parse through episodes and keep track of seasons and episode numbers
+        const season = episode.season;
+        if (total[season] === undefined) { //if its undefined its the first episode of the season
+            total[season] = 1; //make it episode 1
+        } else {
+            total[season] = total[season] + 1; //otherwise add one for that key value pair on the total (which represents episodes)
+        }
+        return total; //return total (episodes) to update tally going through all 236 episodes
+    }, {});
+    return tally; //return object showing seasons, episodes per season
+}
 
-    function getEpisodeTallyBySeason() {
-        return 0;
-    }
-
-    function capitalizeTheFriends(){
-        return 0;
-    }
+function capitalizeTheFriends(json){
+    const episodes = json._embedded.episodes;
+    const p_friendNames = ["Joey", "Chandler", "Monica", "Rachel", "Phoebe", "Ross"]; //create string array of known names to modify
+    const p_capitalizeText = (text) => {
+        if (!text) return text; // handle null summaries
+        return p_friendNames.reduce((total, name) => { //reduce with accumulator and total
+            return total.split(name).join(name.toUpperCase()); //then split Ross and rejoin ROSS into that same position
+        }, text);
+    };
+    return episodes.map(episode => ({ //returns an object of the names in that format
+        ...episode,
+        name: p_capitalizeText(episode.name),
+        summary: p_capitalizeText(episode.summary)
+    }));
+}
 })();
-
