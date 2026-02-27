@@ -23,9 +23,9 @@
         ;
     function getCanadianFlights(json){
         console.log("json inside function:", json);
-            const regions = json.states
-            canadianOnly = regions.filter(regions => 
-                regions.includes("Canada") 
+            const origin = json.states
+            canadianOnly = origin.filter(origin => 
+                origin[2] === "Canada"
             );
             console.log(canadianOnly);
         }
