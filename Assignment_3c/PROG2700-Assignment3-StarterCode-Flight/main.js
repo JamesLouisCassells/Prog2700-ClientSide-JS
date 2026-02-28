@@ -6,7 +6,12 @@
     .then((json) => {
 
         console.log(json);
-        getCanadianFlights(json)
+        const p_canadian = getCanadianFlights(json)
+        const p_geo = geoJsonConvertor(p_canadian);
+        
+        console.log(p_geo.type);// "FeatureCollection"
+        console.log(p_geo.features.length);//number of planes from canada
+        console.log(p_geo.features[0]); //
 
         });
 
@@ -23,11 +28,35 @@
         ;
     function getCanadianFlights(json){
         console.log("json inside function:", json);
-            const origin = json.states
-            canadianOnly = origin.filter(origin => 
-                origin[2] === "Canada"
+            const states = json.states;
+            const canadianOnly = states.filter(state => 
+                state[2] === "Canada"
             );
             console.log(canadianOnly);
+            return canadianOnly;
         }
+
+    function geoJsonConvertor(canadianOnly) {
+        const trackerItems = canadianOnly.map(state => ({
+            type: "Feature",
+            properties: {
+                Callsign: state[1],
+                Origin: state[2],
+                Heading: state[10],
+                Velocity: state[9]
+            },
+            geometry: {
+                type: "Point",
+                coordinates: [state[5], state[6]]  // [lng, lat]
+            },
+            }))
+        const geo_wrapper = {
+            type: "FeatureCollection",
+            features: trackerItems
+            };
+        return geo_wrapper;
+    }  
+
+
 
 })();
