@@ -1,12 +1,13 @@
 // IIFE
 (() => {
     //creating icon variables
-    const p_planeIcon = L.icon({
-    iconUrl: 'images/fish5.png',   // path to my image
-    iconSize: [30, 30],            // width, height
-    iconAnchor: [5, 5],          // center of icon
-    popupAnchor: [0, -16]
-});
+    const p_planeIcons = [1,2,3,4,5].map(p_num =>
+  L.icon({
+    iconUrl: `images/fish${p_num}.png`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  })
+);
 
    //create map in leaflet and tie it to the div called 'theMap'
    //Create a map layer from the api of maps
@@ -30,10 +31,25 @@
         console.log(json);
         const p_canadian = getCanadianFlights(json)
         const p_geo = geoJsonConvertor(p_canadian);
+        
+        // pick ONE icon
+        const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
+        const p_randomIcon = p_planeIcons[p_randomIndex];
+
         L.geoJSON(p_geo, {
             pointToLayer: function(p_feature, p_latlng) {
-                const p_props = p_feature.properties
-                return L.marker(p_latlng, { icon: p_planeIcon })
+                const p_props = p_feature.properties //enables me to use those properties later
+                const p_heading = Number(p_props.Heading) || 0; //this is the heading information pulled from the original json
+                
+                // ✅ pick a fish PER feature (icon diversity)
+                const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
+                const p_randomIcon = p_planeIcons[p_randomIndex];
+
+                return L.marker(p_latlng, { 
+                    icon: p_randomIcon,
+                    rotationAngle: Number.isFinite(p_heading) ? p_heading : 0, //icons are now facing the angle that is retrieved from the original json as heading
+                    rotationOrigin: "center center",
+                     })
                     .bindPopup(`
                         Callsign: ${p_props.Callsign}<br>
                         Origin: ${p_props.Origin}<br>
