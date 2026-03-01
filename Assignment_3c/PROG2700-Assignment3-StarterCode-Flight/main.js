@@ -1,5 +1,13 @@
 // IIFE
 (() => {
+    //creating icon variables
+    const p_planeIcon = L.icon({
+    iconUrl: 'images/fish5.png',   // path to my image
+    iconSize: [30, 30],            // width, height
+    iconAnchor: [5, 5],          // center of icon
+    popupAnchor: [0, -16]
+});
+
    //create map in leaflet and tie it to the div called 'theMap'
    //Create a map layer from the api of maps
     let map = L.map('theMap').setView([
@@ -13,22 +21,33 @@
         }).addTo(map);
     //set a random marker at halifax exactly
     L.marker([44.65336419266691, -63.588753507345444]).addTo(map)
-        .bindPopup('This is a sample popup.')
-        ;
+        .bindPopup('This is a sample popup.');
+
     //fetch the flight data
     fetch("https://prog2700.onrender.com/opensky")
     .then((response) => response.json())
     .then((json) => {
-
         console.log(json);
         const p_canadian = getCanadianFlights(json)
         const p_geo = geoJsonConvertor(p_canadian);
-        L.geoJSON(p_geo).addTo(map);
+        L.geoJSON(p_geo, {
+            pointToLayer: function(p_feature, p_latlng) {
+                const p_props = p_feature.properties
+                return L.marker(p_latlng, { icon: p_planeIcon })
+                    .bindPopup(`
+                        Callsign: ${p_props.Callsign}<br>
+                        Origin: ${p_props.Origin}<br>
+                        Heading: ${p_props.Heading}<br>
+                        Velocity: ${p_props.Velocity}
+                    `);
+            }
+        }).addTo(map); //layering the pointers over the map
 
         console.log("type", p_geo.type);// "FeatureCollection"
         console.log("number of flights:", p_geo.features.length);//number of planes from canada
         console.log("first listed flight", p_geo.features[0]); 
         });
+
     //function to parse the flight data for only flights departing canada (filtering for that array position)
     function getCanadianFlights(json){
         console.log("json inside function:", json);
@@ -39,9 +58,12 @@
             console.log(canadianOnly);
             return canadianOnly;
         }
+
     //function to then convert that canadian origin json into geoJson with specific data points and layers
     function geoJsonConvertor(canadianOnly) {
-        const trackerItems = canadianOnly.map(state => ({
+        const trackerItems = canadianOnly
+        .filter(state => state[5] != null && state[6] != null)
+        .map(state => ({
             type: "Feature",
             properties: {
                 Callsign: state[1],
@@ -61,7 +83,4 @@
             };
         return geo_wrapper;
     }  
-
-
-
 })();
