@@ -1,6 +1,21 @@
 // IIFE
 (() => {
+   //create map in leaflet and tie it to the div called 'theMap'
+   //Create a map layer from the api of maps
+    let map = L.map('theMap').setView([
+          44.65336419266691, -63.588753507345444], 4);
 
+     L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> ' +
+                 '&copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> ' +
+                 '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> ' +
+                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+    //set a random marker at halifax exactly
+    L.marker([44.65336419266691, -63.588753507345444]).addTo(map)
+        .bindPopup('This is a sample popup.')
+        ;
+    //fetch the flight data
     fetch("https://prog2700.onrender.com/opensky")
     .then((response) => response.json())
     .then((json) => {
@@ -8,24 +23,13 @@
         console.log(json);
         const p_canadian = getCanadianFlights(json)
         const p_geo = geoJsonConvertor(p_canadian);
-        
-        console.log(p_geo.type);// "FeatureCollection"
-        console.log(p_geo.features.length);//number of planes from canada
-        console.log(p_geo.features[0]); //
+        L.geoJSON(p_geo).addTo(map);
 
+        console.log("type", p_geo.type);// "FeatureCollection"
+        console.log("number of flights:", p_geo.features.length);//number of planes from canada
+        console.log("first listed flight", p_geo.features[0]); 
         });
-
-    //create map in leaflet and tie it to the div called 'theMap'
-    let map = L.map('theMap').setView([
-          44.65336419266691, -63.588753507345444], 4);
-
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_dark/{z}/{x}/{y}{r}.png', {
-	attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map);
-
-    L.marker([44.65336419266691, -63.588753507345444]).addTo(map)
-        .bindPopup('This is a sample popup. You can put any html structure in this including extra flight data. You can also swap this icon out for a custom icon. Some png files have been provided for you to use if you wish.')
-        ;
+    //function to parse the flight data for only flights departing canada (filtering for that array position)
     function getCanadianFlights(json){
         console.log("json inside function:", json);
             const states = json.states;
@@ -35,7 +39,7 @@
             console.log(canadianOnly);
             return canadianOnly;
         }
-
+    //function to then convert that canadian origin json into geoJson with specific data points and layers
     function geoJsonConvertor(canadianOnly) {
         const trackerItems = canadianOnly.map(state => ({
             type: "Feature",
@@ -50,6 +54,7 @@
                 coordinates: [state[5], state[6]]  // [lng, lat]
             },
             }))
+        //wrap that object in another object as geojson had to receive it that way for layering
         const geo_wrapper = {
             type: "FeatureCollection",
             features: trackerItems
