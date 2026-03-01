@@ -1,13 +1,13 @@
 // IIFE
 (() => {
-    //creating icon variables
-    const p_planeIcons = [1,2,3,4,5].map(p_num =>
-  L.icon({
-    iconUrl: `images/fish${p_num}.png`,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20]
-  })
-);
+    //creating icon variables ~~ mapping file numbers to a function with object of size, anchor, url thats tied to a variable
+    const p_planeIcons = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29].map(p_num => 
+    L.icon({
+        iconUrl: `images/fish${p_num}.png`,
+        iconSize: [94, 40],
+        iconAnchor: [47, 20]
+        })
+    );
 
    //create map in leaflet and tie it to the div called 'theMap'
    //Create a map layer from the api of maps
@@ -23,25 +23,36 @@
     //set a random marker at halifax exactly
     L.marker([44.65336419266691, -63.588753507345444]).addTo(map)
         .bindPopup('This is a sample popup.');
+    
+    const api_url = "https://prog2700.onrender.com/opensky";
+    const refreshInterval = 7000; // 7 seconds in milliseconds
 
-    //fetch the flight data
-    fetch("https://prog2700.onrender.com/opensky")
-    .then((response) => response.json())
-    .then((json) => {
-        console.log(json);
-        const p_canadian = getCanadianFlights(json)
-        const p_geo = geoJsonConvertor(p_canadian);
-        
-        // pick ONE icon
-        const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
-        const p_randomIcon = p_planeIcons[p_randomIndex];
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
 
-        L.geoJSON(p_geo, {
-            pointToLayer: function(p_feature, p_latlng) {
-                const p_props = p_feature.properties //enables me to use those properties later
-                const p_heading = Number(p_props.Heading) || 0; //this is the heading information pulled from the original json
+            const json = await response.json();
+            console.log(json);
+            const p_canadian = getCanadianFlights(json)
+            const p_geo = geoJsonConvertor(p_canadian);
                 
-                // ✅ pick a fish PER feature (icon diversity)
+            // pick ONE icon
+            const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
+            const p_randomIcon = p_planeIcons[p_randomIndex];
+    
+            L.geoJSON(p_geo, {
+                pointToLayer: function(p_feature, p_latlng) {
+                    const p_props = p_feature.properties //shortcut to use those properties later
+                    const p_heading = Number(p_props.Heading) || 0; //this is the heading information pulled from the original json
+                    const p_offset = 90;
+                    const p_angle = Number.isFinite(p_heading) 
+                        ? p_heading + p_offset //ternary operator shortcut. if its a real number (not null, undefined, NaN, Infinity) then its 90 
+                        : 0; //else the angle is 0
+
+                // pick a fish PER feature (icon diversity)
                 const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
                 const p_randomIcon = p_planeIcons[p_randomIndex];
 
@@ -57,12 +68,21 @@
                         Velocity: ${p_props.Velocity}
                     `);
             }
-        }).addTo(map); //layering the pointers over the map
+            }).addTo(map); //layering the pointers over the map
 
-        console.log("type", p_geo.type);// "FeatureCollection"
-        console.log("number of flights:", p_geo.features.length);//number of planes from canada
-        console.log("first listed flight", p_geo.features[0]); 
-        });
+                console.log("type", p_geo.type);// "FeatureCollection"
+                console.log("number of flights:", p_geo.features.length);//number of planes from canada
+                console.log("first listed flight", p_geo.features[0]); 
+                console.log(json);
+        
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            // Implement retry logic or stop refreshing if needed
+        } finally {
+            // Schedule the next call after the current one completes
+            setTimeout(() => fetchData(url), refreshInterval); //  //now refreshes every 7 seconds
+        }
+    }
 
     //function to parse the flight data for only flights departing canada (filtering for that array position)
     function getCanadianFlights(json){
@@ -99,4 +119,6 @@
             };
         return geo_wrapper;
     }  
+
+fetchData(api_url).then(p_data => console.log("returned:", p_data));
 })();
