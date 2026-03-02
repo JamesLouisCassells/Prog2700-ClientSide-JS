@@ -26,6 +26,7 @@
     
     const api_url = "https://prog2700.onrender.com/opensky";
     const refreshInterval = 7000; // 7 seconds in milliseconds
+    let p_flightsLayer = null;// holds the current geoJSON layer
 
     async function fetchData(url) {
         try {
@@ -42,47 +43,52 @@
             // pick ONE icon
             const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
             const p_randomIcon = p_planeIcons[p_randomIndex];
-    
-            L.geoJSON(p_geo, {
-                pointToLayer: function(p_feature, p_latlng) {
-                    const p_props = p_feature.properties //shortcut to use those properties later
-                    const p_heading = Number(p_props.Heading) || 0; //this is the heading information pulled from the original json
-                    const p_offset = 90;
-                    const p_angle = Number.isFinite(p_heading) 
-                        ? p_heading + p_offset //ternary operator shortcut. if its a real number (not null, undefined, NaN, Infinity) then its 90 
-                        : 0; //else the angle is 0
-
-                // pick a fish PER feature (icon diversity)
-                const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
-                const p_randomIcon = p_planeIcons[p_randomIndex];
-
-                return L.marker(p_latlng, { 
-                    icon: p_randomIcon,
-                    rotationAngle: Number.isFinite(p_heading) ? p_heading : 0, //icons are now facing the angle that is retrieved from the original json as heading
-                    rotationOrigin: "center center",
-                     })
-                    .bindPopup(`
-                        Callsign: ${p_props.Callsign}<br>
-                        Origin: ${p_props.Origin}<br>
-                        Heading: ${p_props.Heading}<br>
-                        Velocity: ${p_props.Velocity}
-                    `);
+            
+            // remove old layer (if it exists)
+            if (p_flightsLayer) {
+                map.removeLayer(p_flightsLayer);
             }
-            }).addTo(map); //layering the pointers over the map
 
-                console.log("type", p_geo.type);// "FeatureCollection"
-                console.log("number of flights:", p_geo.features.length);//number of planes from canada
-                console.log("first listed flight", p_geo.features[0]); 
-                console.log(json);
-        
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            // Implement retry logic or stop refreshing if needed
-        } finally {
-            // Schedule the next call after the current one completes
-            setTimeout(() => fetchData(url), refreshInterval); //  //now refreshes every 7 seconds
+            p_flightsLayer = L.geoJSON(p_geo, {
+                    pointToLayer: function(p_feature, p_latlng) {
+                        const p_props = p_feature.properties //shortcut to use those properties later
+                        const p_heading = Number(p_props.Heading) || 0; //this is the heading information pulled from the original json
+                        const p_offset = 90;
+                        const p_angle = Number.isFinite(p_heading) 
+                            ? p_heading + p_offset //ternary operator shortcut. if its a real number (not null, undefined, NaN, Infinity) then its 90 
+                            : 0; //else the angle is 0
+
+                    // pick a fish PER feature (icon diversity)
+                    const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
+                    const p_randomIcon = p_planeIcons[p_randomIndex];
+
+                    return L.marker(p_latlng, { 
+                        icon: p_randomIcon,
+                        rotationAngle: Number.isFinite(p_heading) ? p_heading : 0, //icons are now facing the angle that is retrieved from the original json as heading
+                        rotationOrigin: "center center",
+                        })
+                        .bindPopup(`
+                            Callsign: ${p_props.Callsign}<br>
+                            Origin: ${p_props.Origin}<br>
+                            Heading: ${p_props.Heading}<br>
+                            Velocity: ${p_props.Velocity}
+                        `);
+                }
+                }).addTo(map); //layering the pointers over the map
+
+                    console.log("type", p_geo.type);// "FeatureCollection"
+                    console.log("number of flights:", p_geo.features.length);//number of planes from canada
+                    console.log("first listed flight", p_geo.features[0]); 
+                    console.log(json);
+            
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                // Implement retry logic or stop refreshing if needed
+            } finally {
+                // Schedule the next call after the current one completes
+                setTimeout(() => fetchData(url), refreshInterval); //  //now refreshes every 7 seconds
+            }
         }
-    }
 
     //function to parse the flight data for only flights departing canada (filtering for that array position)
     function getCanadianFlights(json){
