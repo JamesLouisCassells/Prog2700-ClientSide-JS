@@ -22,7 +22,7 @@
         }).addTo(map);
     //set a random marker at halifax exactly
     L.marker([44.65336419266691, -63.588753507345444]).addTo(map)
-        .bindPopup('This is a sample popup.');
+        .bindPopup('Home for JLAC');
     
     const api_url = "https://prog2700.onrender.com/opensky";
     const refreshInterval = 7000; // 7 seconds in milliseconds
@@ -39,11 +39,7 @@
             console.log(json);
             const p_canadian = getCanadianFlights(json)
             const p_geo = geoJsonConvertor(p_canadian);
-                
-            // pick ONE icon
-            const p_randomIndex = Math.floor(Math.random() * p_planeIcons.length);
-            const p_randomIcon = p_planeIcons[p_randomIndex];
-            
+             
             // remove old layer (if it exists)
             if (p_flightsLayer) {
                 map.removeLayer(p_flightsLayer);
@@ -64,22 +60,21 @@
 
                     return L.marker(p_latlng, { 
                         icon: p_randomIcon,
-                        rotationAngle: Number.isFinite(p_heading) ? p_heading : 0, //icons are now facing the angle that is retrieved from the original json as heading
-                        rotationOrigin: "center center",
-                        })
+                        rotationAngle: p_angle,
+                        rotationOrigin: "center center"
+                    })
                         .bindPopup(`
-                            Callsign: ${p_props.Callsign}<br>
+                            Callsign: ${p_props.Callsign}<br> 
                             Origin: ${p_props.Origin}<br>
                             Heading: ${p_props.Heading}<br>
                             Velocity: ${p_props.Velocity}
                         `);
                 }
                 }).addTo(map); //layering the pointers over the map
-
                     console.log("type", p_geo.type);// "FeatureCollection"
                     console.log("number of flights:", p_geo.features.length);//number of planes from canada
                     console.log("first listed flight", p_geo.features[0]); 
-                    console.log(json);
+                    // console.log(json);
             
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -126,5 +121,5 @@
         return geo_wrapper;
     }  
 
-fetchData(api_url).then(p_data => console.log("returned:", p_data));
+fetchData(api_url);
 })();
