@@ -18,19 +18,24 @@
 
             const json = await response.json();
             console.log("json info received from api: ", json);
-            //link the dom to the div
-            const game_div = document.querySelector("#theGame"); //selects the entire page with document, QS chooses the element with id "#theGame" (no # would search for an element)
-            console.log("return from querySelector: ", game_div);
-            //create a table to put in the div
-            const table = document.createElement("table");
-            //attach that table to the linked div
-            game_div.appendChild(table);
-            //creating a row and adding it to the table
-            var row = document.createElement("tr");
-            table.appendChild(row);
-            var data = document.createElement("td");
-            row.appendChild(data);
+            
+            function createTable(p_data){
+                const game_div = document.querySelector("#theGame"); //selects the entire page with document, QS chooses the element with id "#theGame" (no # would search for an element)
+                console.log("return from querySelector: ", game_div);
+                game_div.innerHTML = ""; //c;ears the element
+                const table = document.createElement("table"); //creates the table
+                for (let row = 0; row < p_data.rows.length; row ++){ //length of the array row
+                    const tableRow = document.createElement("tr");
+                    for(let col = 0; col < p_data.rows[row].length; col ++) {
+                        const tableData = document.createElement("td");
+                        tableData.appendChild(tableRow)
+                    }
+                    tableRow.appendChild(tableData);
+                }                
+            }
+            game_div.appendChild(createTable)
         }
+            
 
         catch (error) {
                 console.error("Error fetching data:", error);
