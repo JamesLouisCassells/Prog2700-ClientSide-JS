@@ -9,3 +9,11 @@ td {
     border: 1px solid black;
     background-color: lightgray;
 }
+
+.blue-cell {
+    background-color: blue;
+}
+
+.white-cell {
+    background-color: white;
+}
