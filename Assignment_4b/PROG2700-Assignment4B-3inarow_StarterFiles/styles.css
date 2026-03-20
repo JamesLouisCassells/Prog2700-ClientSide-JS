@@ -17,3 +17,14 @@ td {
 .white-cell {
     background-color: white;
 }
+
+button {
+    display: block;
+    margin: 20px auto 10px auto;
+    padding: 10px 16px;
+}
+
+p {
+    text-align: center;
+    font-weight: bold;
+}
