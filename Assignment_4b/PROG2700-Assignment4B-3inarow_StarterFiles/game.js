@@ -161,7 +161,7 @@
             game_div.appendChild(p_checkButton); //attaches the button to the wire framimg
             game_div.appendChild(p_statusMessage); //adds the status message after that
             game_div.appendChild(p_errorDisplayLabel);//puts the error checker on the screen
-            game_div.appendChild(p_clickCount);
+            game_div.appendChild(p_counterLabel);
             game_div.appendChild(builtTable); //puts the built table on the screen
 
         } catch (error) {
