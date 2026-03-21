@@ -56,6 +56,8 @@
                             const clickRow = Number(this.dataset.row);
                             const clickCol = Number(this.dataset.col);
                             const clickCell = p_data.rows[clickRow][clickCol];
+                            p_clickCount++; //updates my click counter for req006
+                            p_counterLabel.textContent = "Clicks: " + p_clickCount;
                             //if this is a fixed starting square, do nothing
                             if (!clickCell.canToggle) {
                                 return;
@@ -142,18 +144,24 @@
             const p_errorCheckbox = document.createElement("input");
             p_errorCheckbox.type = "checkbox";
             p_errorDisplayLabel.appendChild(p_errorCheckbox);
-            p_errorDisplayLabel.appendChild(document.createTextNode(" Show incorrect square"));
+            p_errorDisplayLabel.appendChild(document.createTextNode(" Show Incorrect Square(s)"));
 
             p_errorCheckbox.addEventListener("change", function () { //checks if the box is checked or not
                 showErrors(json, this.checked); //this is the variable that will be passed into the function showErrors as p_show if there are errors    
             });
 
-
             const builtTable = createTable(json); //calls the function with the json passed in
+            
+            //req006 REQ-006	ADDING AN INNOVATIVE FEATURE 
+            let p_clickCount = 0; //create a base numbered variable of 0
+            const p_counterLabel = document.createElement("p"); //create a DOM element to display that counter
+            p_counterLabel.textContent = "Clicks: 0";
 
+        
             game_div.appendChild(p_checkButton); //attaches the button to the wire framimg
             game_div.appendChild(p_statusMessage); //adds the status message after that
             game_div.appendChild(p_errorDisplayLabel);//puts the error checker on the screen
+            game_div.appendChild(p_clickCount);
             game_div.appendChild(builtTable); //puts the built table on the screen
 
         } catch (error) {
