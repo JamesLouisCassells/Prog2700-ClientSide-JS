@@ -3,6 +3,7 @@
 // 2) Build the puzzle table in JavaScript only
 // 3) Let user click changeable squares to cycle through 3 states
 // 4) Check puzzle status with a button and display the result
+// 5) Create uniqiue display?
 
 (() => { //wrapping my code IIFE
     const api_url = "https://prog2700.onrender.com/threeinarow/sample";
@@ -49,12 +50,12 @@
 
                         //req003 REQ-003 CHANGING OF SQUARE COLORS WITH MOUSE CLICKS
                         //creating actions for clicking based on what values are stored in the api
+                        //this is my click handler
                         tableData.addEventListener("click", function () {
                             console.log("cell clicked");
                             const clickRow = Number(this.dataset.row);
                             const clickCol = Number(this.dataset.col);
                             const clickCell = p_data.rows[clickRow][clickCol];
-
                             //if this is a fixed starting square, do nothing
                             if (!clickCell.canToggle) {
                                 return;
@@ -63,18 +64,16 @@
                             //assigning state based on clicks
                             clickCell.currentState = (clickCell.currentState + 1) % 3; //0 becomes 1, 1 becomes 2, 2 becomes 0 using modulo
                             this.classList.remove("blue-cell", "white-cell");
-
                             if (clickCell.currentState === 1) {
                                 this.classList.add("blue-cell");
                             }
                             else if (clickCell.currentState === 2) {
                                 this.classList.add("white-cell");
                             }
+                            showErrors(p_data, p_errorCheckbox.checked); //keeps the error highlight updated (from req 005)
                         });
-
                         tableRow.appendChild(tableData); //adds the current cell into the current row
                     }
-
                     table.appendChild(tableRow); //adds the finished row into the table
                 }
 
@@ -86,9 +85,9 @@
                 let hasError = false; //default states for status checking
                 let isComplete = true;
 
-                for (let row = 0; row < p_data.rows.length; row++) {
-                    for (let col = 0; col < p_data.rows[row].length; col++) {
-                        const p_cell = p_data.rows[row][col];
+                for (let row = 0; row < p_data.rows.length; row++) { //loop through the rows
+                    for (let col = 0; col < p_data.rows[row].length; col++) { //loop through the columns
+                        const p_cell = p_data.rows[row][col]; //store each individual value from the data in p_cell
 
                         if (p_cell.currentState === 0) { //if the data says the square is still empty, the puzzle is not complete
                             isComplete = false;
@@ -98,7 +97,7 @@
                         }
                     }
                 }
-
+                //Messages for clicking the button provided here in the return
                 if (hasError) {
                     return "Something is wrong";
                 }
@@ -110,22 +109,52 @@
                 }
             }
 
-            //building button and message area to check puzzle state after clicks
-            const p_checkButton = document.createElement("button");
-            p_checkButton.textContent = "Check Puzzle";
+            //req005 ERROR DISPLAY CHECKBOX (6 PTS.)
+            function showErrors(p_data, p_show) { //passes in main data and if the checkbox is checked will show errors
+                const allCells = game_div.querySelectorAll("td");//targets all data
 
-            const p_statusMessage = document.createElement("p");
-            p_statusMessage.textContent = "";
+                allCells.forEach(function (cell) { //saves variables for row, column and the data
+                    const row = Number(cell.dataset.row);
+                    const col = Number(cell.dataset.col);
+                    const cellInfo = p_data.rows[row][col];
 
-            p_checkButton.addEventListener("click", function () {
-                p_statusMessage.textContent = puzzleStatus(json);
+                    cell.classList.remove("error-cell");
+
+                    if (p_show && cellInfo.currentState !== 0 && cellInfo.currentState !== cellInfo.correctState) { //only run if the checkbox is true
+                        cell.classList.add("error-cell");
+                    }
+                });
+            }
+
+            //Puzzle state button: building button and message area to check puzzle state after clicks
+            const p_checkButton = document.createElement("button"); //creates a button in data
+            p_checkButton.textContent = "Check Puzzle"; //assigns a label to the button
+
+            const p_statusMessage = document.createElement("p"); //creating element to be passed in for status checking (messages above)
+            p_statusMessage.textContent = ""; //initalising paragraph as empty
+
+            p_checkButton.addEventListener("click", function () { //when the button is clicked
+                p_statusMessage.textContent = puzzleStatus(json); //run this function and check if the puzzles correct
             });
+
+            //Error checking button: building checkbox and message 
+            const p_errorDisplayLabel = document.createElement("label");
+            const p_errorCheckbox = document.createElement("input");
+            p_errorCheckbox.type = "checkbox";
+            p_errorDisplayLabel.appendChild(p_errorCheckbox);
+            p_errorDisplayLabel.appendChild(document.createTextNode(" Show incorrect square"));
+
+            p_errorCheckbox.addEventListener("change", function () { //checks if the box is checked or not
+                showErrors(json, this.checked); //this is the variable that will be passed into the function showErrors as p_show if there are errors    
+            });
+
 
             const builtTable = createTable(json); //calls the function with the json passed in
 
-            game_div.appendChild(p_checkButton);
-            game_div.appendChild(p_statusMessage);
-            game_div.appendChild(builtTable);
+            game_div.appendChild(p_checkButton); //attaches the button to the wire framimg
+            game_div.appendChild(p_statusMessage); //adds the status message after that
+            game_div.appendChild(p_errorDisplayLabel);//puts the error checker on the screen
+            game_div.appendChild(builtTable); //puts the built table on the screen
 
         } catch (error) {
             console.error("Error fetching data:", error);
