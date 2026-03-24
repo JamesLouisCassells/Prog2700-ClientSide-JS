@@ -5,7 +5,7 @@ function Game() {
     const p_size = 6; //fixing the size as six for my grid
 
     const [p_grid, setGrid] = useState( //p_grid takes the paramter for the grid size, setGrid updates it. useState builds my grid
-        Array(p_size).fill(null).map(() => Array(p_size).fill(""))
+        Array(p_size).fill(null).map(() => Array(p_size).fill("")) //Creates a grid with empty strings. Fill() makes it useable
     );
 
     //function to handle clicks
