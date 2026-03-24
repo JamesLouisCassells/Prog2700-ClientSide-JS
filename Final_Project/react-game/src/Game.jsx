@@ -16,17 +16,21 @@ function Game() {
         setGrid(newGrid); //triggers a new grid update (a react feature!)
     }
 
-    return <Grid p_grid={p_grid} p_onClick={handleCellClick} />;
+   function resetGame() {
+        const emptyGrid = Array(p_size)
+            .fill(null)
+            .map(() => Array(p_size).fill(""));
+
+        setGrid(emptyGrid);
+    }
+
+    // ✅ RETURN BOTH Grid AND button
+    return (
+        <div>
+            <Grid p_grid={p_grid} p_onClick={handleCellClick} />
+            <button onClick={resetGame}>Reset</button>
+        </div>
+    );
 }
-
-function resetGame() {
-    const emptyGrid = Array(p_size)
-        .fill(null)
-        .map(() => Array(p_size).fill(""));
-
-    setGrid(emptyGrid);
-}
-
-<button onClick={resetGame}>Reset</button>
 
 export default Game;
