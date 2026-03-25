@@ -1,21 +1,20 @@
 // draw one cell and handle clicks
 //Cell represetns one square on the board and how it is displayed
-function Cell({ p_value, p_onClick }) {
+function Cell({ p_value, p_onClick, p_canToggle }) {
     return (
         <td
-            //this is the react version of addEventListener in dom manipulation
-            onClick={p_onClick}
+            onClick={p_canToggle ? p_onClick : null} // only clickable if allowed
             style={{
                 width: "60px",
                 height: "60px",
                 border: "1px solid black",
                 textAlign: "center",
-                cursor: "pointer",
-                fontSize: "24px"
+                cursor: p_canToggle ? "pointer" : "default",
+                fontSize: "24px",
+                backgroundColor: p_canToggle ? "white" : "#ddd" //show locked cells
             }}
         >
-             {/* this tells it to display "" or X */}
-            {p_value} 
+            {p_value}
         </td>
     );
 }
