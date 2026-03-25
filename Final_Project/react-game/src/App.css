@@ -1,8 +1,29 @@
-table {
-    border-collapse: collapse;
-    margin-top: 20px;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
 }
 
-td {
-    vertical-align: middle;
+.game-container {
+    text-align: center;
+    margin-top: 40px;
+}
+
+table {
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 16px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
 }

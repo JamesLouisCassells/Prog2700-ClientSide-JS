@@ -7,26 +7,29 @@ import Grid from "./Grid";
 //click → update state - React re-renders automatically
 
 function Game() { //this replaces my mainjson variable from game.js
-    const [p_puzzle, setPuzzle] = useState(null);//starts as null because theres no initial fetch
+    const [p_puzzle, setPuzzle] = useState(null); //starts as null because theres no initial fetch
+    const [p_statusMessage, setStatusMessage] = useState(""); //stores the message shown after clicking check puzzle
 
     useEffect(() => { //this only runs when the page first opens (as with the IIFE in 4b )
-        async function fetchPuzzle() {//api call
+        async function fetchPuzzle() { //api call
             try {
                 const p_response = await fetch("https://prog2700.onrender.com/threeinarow/sample");
+
                 //check for errors
                 if (!p_response.ok) {
                     throw new Error(`Error ${p_response.status}: ${p_response.statusText}`);
                 }
+
                 //assign fetched json as a variable
                 const p_json = await p_response.json();
-                setPuzzle(p_json); //stories it as a react variable!
+                setPuzzle(p_json); //stores it as React state
             }
             catch (p_error) {
                 console.error("Error fetching puzzle:", p_error);
             }
         }
 
-        fetchPuzzle();
+        fetchPuzzle(); //calls the api fetch
     }, []); //this empty array means this only runs once (at initial load up)
 
     //replaces addEventHandler from game.js
@@ -55,23 +58,72 @@ function Game() { //this replaces my mainjson variable from game.js
             });
 
             //this returns a new puzzle object which react needs
-            return { 
+            return {
                 ...p_prevPuzzle,
                 rows: p_newRows
             };
         });
     }
-    // while waiting for API this will show "loading puzzle"  (instead of blank screen)
+
+    //checks the whole puzzle and decides what message to show
+    function checkPuzzle() {
+        if (!p_puzzle) { //safety check in case puzzle has not loaded yet
+            return;
+        }
+
+        let p_hasWrongCell = false;
+        let p_hasIncompleteCell = false;
+
+        //outer loop = rows
+        p_puzzle.rows.forEach(function (p_row) {
+
+            //inner loop = each cell in the row
+            p_row.forEach(function (p_cell) {
+
+                //if any cell is still empty then the puzzle is not complete yet
+                if (p_cell.currentState === 0) {
+                    p_hasIncompleteCell = true;
+                }
+
+                //if a FILLED cell does not match the correct state, then it is wrong
+                //this avoids treating empty cells as wrong straight away
+                if (p_cell.currentState !== 0 && p_cell.currentState !== p_cell.correctState) {
+                    p_hasWrongCell = true;
+                }
+            });
+        });
+
+        //decides which message gets shown
+        if (p_hasWrongCell) {
+            setStatusMessage("Something is wrong");
+        }
+        else if (p_hasIncompleteCell) {
+            setStatusMessage("So far so good");
+        }
+        else {
+            setStatusMessage("You did it!!");
+        }
+    }
+
+    //shows loading text until the API data arrives
     if (!p_puzzle) {
         return <p>Loading puzzle...</p>;
     }
 
-    //render grid
-    //pass the data (rows), the click handler
     return (
-        <div>
+        <div className="game-container">
+            <h1>Three in a Row!</h1>
+
+            {/* renders the actual game grid */}
             <Grid p_rows={p_puzzle.rows} p_onCellClick={handleCellClick} />
+
+            {/* button to check the puzzle status */}
+            <button onClick={checkPuzzle}>Check Puzzle</button>
+
+            {/* displays the result message */}
+            <p>{p_statusMessage}</p>
         </div>
     );
 }
+
 export default Game;

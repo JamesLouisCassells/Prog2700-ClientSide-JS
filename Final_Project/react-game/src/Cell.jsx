@@ -1,9 +1,10 @@
 // draw one cell and handle clicks
-//Cell represetns one square on the board and how it is displayed
+// Cell represents one square on the board and how it is displayed
 function Cell({ p_value, p_onClick, p_canToggle }) {
     return (
         <td
-            onClick={p_canToggle ? p_onClick : null} // only clickable if allowed
+            // only allow click if the square is toggleable
+            onClick={p_canToggle ? p_onClick : null}
             style={{
                 width: "60px",
                 height: "60px",
@@ -11,7 +12,8 @@ function Cell({ p_value, p_onClick, p_canToggle }) {
                 textAlign: "center",
                 cursor: p_canToggle ? "pointer" : "default",
                 fontSize: "24px",
-                backgroundColor: p_canToggle ? "white" : "#ddd" //show locked cells
+                fontWeight: "bold",
+                backgroundColor: p_canToggle ? "white" : "#4e4d4d"
             }}
         >
             {p_value}
