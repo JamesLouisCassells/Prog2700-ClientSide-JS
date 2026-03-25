@@ -1,15 +1,7 @@
 import Cell from "./Cell";
 
 //replaces my draw table function (create element, append child)
-function Grid({ p_rows, p_onCellClick }) { //passes in puzzle data and the function from game.jsx -- grid receives data and displays it
-
-    // helper function to decide what to DISPLAY in each cell
-    // same idea as with game.js: 0 = empty, 1 = X, 2 = O 
-    function getCellDisplay(p_value) {
-        if (p_value === 1) return "X";
-        if (p_value === 2) return "O";
-        return "";
-    }
+function Grid({ p_rows, p_onCellClick, p_showErrors }) { //passes in puzzle data, click function, and whether errors should be shown
 
     //the return shows what is being drawn: a table
     return (
@@ -22,12 +14,18 @@ function Grid({ p_rows, p_onCellClick }) { //passes in puzzle data and the funct
 
                             {/* loop trough columns (inner loop), each cell becomes a Cell component instead of raw td */}
                             {p_row.map(function (p_cell, p_colIndex) {
+
+                                //only shows as wrong if checkbox is on, cell is filled, and answer is incorrect
+                                const p_isWrong = p_showErrors &&
+                                    p_cell.currentState !== 0 &&
+                                    p_cell.currentState !== p_cell.correctState;
+
                                 return (
                                     <Cell
                                         key={p_colIndex} // needed by React when looping
 
-                                        // sends in what should be shown inside the square
-                                        p_value={getCellDisplay(p_cell.currentState)}
+                                        // sends in the actual current state of the square
+                                        p_state={p_cell.currentState}
 
                                         // sends in the click handler with the exact row/col of the clicked square
                                         p_onClick={() => {
@@ -36,6 +34,9 @@ function Grid({ p_rows, p_onCellClick }) { //passes in puzzle data and the funct
 
                                         // sends in whether that square is allowed to be clicked or not
                                         p_canToggle={p_cell.canToggle}
+
+                                        // sends in whether this square should be highlighted as wrong
+                                        p_isWrong={p_isWrong}
                                     />
                                 );
                             })}
