@@ -3,7 +3,6 @@ import Game from "./Game";
 function App() {
     return (
         <div>
-            <h1>Three in a Row!</h1> 
             <Game /> 
         </div>
     );
