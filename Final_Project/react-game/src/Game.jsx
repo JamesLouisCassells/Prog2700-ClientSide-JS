@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Grid from "./Grid";
 
 //BEFORE: fetch - build table - click - manually update DOM
-
 //NOW: fetch - store in state - render JSX
 //click → update state - React re-renders automatically
 
@@ -22,7 +21,6 @@ function Game() { //this replaces my mainjson variable from game.js
                 if (!p_response.ok) {
                     throw new Error(`Error ${p_response.status}: ${p_response.statusText}`);
                 }
-
                 //assign fetched json as a variable
                 const p_json = await p_response.json();
                 setPuzzle(p_json); //stores it as React state
@@ -49,18 +47,15 @@ function Game() { //this replaces my mainjson variable from game.js
                     if (p_rowIndex !== p_row || p_colIndex !== p_col) { //if not the clicked cell then change nothing
                         return p_cell;
                     }
-
                     if (!p_cell.canToggle) { //if its locked then do nothing
                         return p_cell;
                     }
-
                     return { //this is the same toggle return logic as from game.js
                         ...p_cell,
                         currentState: (p_cell.currentState + 1) % 3
                     };
                 });
             });
-
             //this returns a new puzzle object which react needs
             return {
                 ...p_prevPuzzle,
@@ -88,18 +83,14 @@ function Game() { //this replaces my mainjson variable from game.js
 
         let p_hasWrongCell = false;
         let p_hasIncompleteCell = false;
-
         //outer loop = rows
         p_puzzle.rows.forEach(function (p_row) {
-
             //inner loop = each cell in the row
             p_row.forEach(function (p_cell) {
-
                 //if any cell is still empty then the puzzle is not complete yet
                 if (p_cell.currentState === 0) {
                     p_hasIncompleteCell = true;
                 }
-
                 //if a FILLED cell does not match the correct state, then it is wrong
                 //this avoids treating empty cells as wrong straight away
                 if (p_cell.currentState !== 0 && p_cell.currentState !== p_cell.correctState) {
@@ -127,8 +118,7 @@ function Game() { //this replaces my mainjson variable from game.js
 
     return (
         <div className="game-container">
-            <h1>Three in a Row!</h1>
-
+            <h1>Three in a Row with React!</h1>
             {/* renders the actual game grid */}
             <Grid  p_rows={p_puzzle.rows}
                     p_onCellClick={handleCellClick}
@@ -139,7 +129,6 @@ function Game() { //this replaces my mainjson variable from game.js
             <button onClick={checkPuzzle}>Check Puzzle</button>
              {/* button to reset the puzzle status !*/}
             <button onClick={resetPuzzle}>Reset Puzzle</button>
-
             <label>
                 <input
                     type="checkbox"
@@ -150,7 +139,6 @@ function Game() { //this replaces my mainjson variable from game.js
                 />
                 Show Errors
              </label>
-
             {/* displays the result message */}
             <p>{p_statusMessage}</p>
         </div>
