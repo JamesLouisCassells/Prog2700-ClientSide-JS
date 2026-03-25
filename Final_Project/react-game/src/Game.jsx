@@ -7,8 +7,10 @@ import Grid from "./Grid";
 //click → update state - React re-renders automatically
 
 function Game() { //this replaces my mainjson variable from game.js
+    //setting state variables
     const [p_puzzle, setPuzzle] = useState(null); //starts as null because theres no initial fetch
     const [p_statusMessage, setStatusMessage] = useState(""); //stores the message shown after clicking check puzzle
+    const [p_showErrors, setShowErrors] = useState(false); //tracks whether the checkbox is checked
 
     useEffect(() => { //this only runs when the page first opens (as with the IIFE in 4b )
         async function fetchPuzzle() { //api call
@@ -115,10 +117,24 @@ function Game() { //this replaces my mainjson variable from game.js
             <h1>Three in a Row!</h1>
 
             {/* renders the actual game grid */}
-            <Grid p_rows={p_puzzle.rows} p_onCellClick={handleCellClick} />
+            <Grid  p_rows={p_puzzle.rows}
+                    p_onCellClick={handleCellClick}
+                    p_showErrors={p_showErrors}  
+            />
 
             {/* button to check the puzzle status */}
             <button onClick={checkPuzzle}>Check Puzzle</button>
+
+            <label>
+                <input
+                    type="checkbox"
+                    checked={p_showErrors}
+                    onChange={function (p_event) {
+                        setShowErrors(p_event.target.checked);
+                    }}
+                />
+                Show Errors
+             </label>
 
             {/* displays the result message */}
             <p>{p_statusMessage}</p>
