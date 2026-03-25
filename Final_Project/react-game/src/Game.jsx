@@ -1,36 +1,77 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Grid from "./Grid";
-//where my grid lives and updates
-//this is my most important file that uses the most react actions
-function Game() {
-    const p_size = 6; //fixing the size as six for my grid
 
-    const [p_grid, setGrid] = useState( //p_grid takes the paramter for the grid size, setGrid updates it. useState builds my grid
-        Array(p_size).fill(null).map(() => Array(p_size).fill("")) //Creates a grid with empty strings. Fill() makes it useable
-    );
+//BEFORE: fetch - build table - click - manually update DOM
 
-    //function to handle clicks - wrapped in a function so it doesnt load on page load but on click
-    function handleCellClick(p_row, p_col) { //takes the specific row and column as parameters that the user clicked
-        const newGrid = p_grid.map((row) => [...row]); //maps a new grid instead of mutating original
-        newGrid[p_row][p_col] = newGrid[p_row][p_col] === "" ? "X" : ""; //empty cell gets an x, otherwise clear it (ON THE NEW GRID)
-        setGrid(newGrid); //triggers a new grid update (a react feature!)
+//NOW: fetch - store in state - render JSX
+//click → update state - React re-renders automatically
+
+function Game() { //this replaces my mainjson variable from game.js
+    const [p_puzzle, setPuzzle] = useState(null);//starts as null because theres no initial fetch
+
+    useEffect(() => { //this only runs when the page first opens (as with the IIFE in 4b )
+        async function fetchPuzzle() {//api call
+            try {
+                const p_response = await fetch("https://prog2700.onrender.com/threeinarow/sample");
+                //check for errors
+                if (!p_response.ok) {
+                    throw new Error(`Error ${p_response.status}: ${p_response.statusText}`);
+                }
+                //assign fetched json as a variable
+                const p_json = await p_response.json();
+                setPuzzle(p_json); //stories it as a react variable!
+            }
+            catch (p_error) {
+                console.error("Error fetching puzzle:", p_error);
+            }
+        }
+
+        fetchPuzzle();
+    }, []); //this empty array means this only runs once (at initial load up)
+
+    //replaces addEventHandler from game.js
+    function handleCellClick(p_row, p_col) {
+        //never mutate state directly so i build a new one
+        setPuzzle(function (p_prevPuzzle) {
+            if (!p_prevPuzzle) {
+                return p_prevPuzzle;
+            }
+
+            const p_newRows = p_prevPuzzle.rows.map(function (p_currentRow, p_rowIndex) { //map creates a new state of grid (this replaces nested loops from games.js)
+                return p_currentRow.map(function (p_cell, p_colIndex) {
+                    if (p_rowIndex !== p_row || p_colIndex !== p_col) { //if not the clicked cell then change nothing
+                        return p_cell;
+                    }
+
+                    if (!p_cell.canToggle) { //if its locked then do nothing
+                        return p_cell;
+                    }
+
+                    return { //this is the same toggle return logic as from game.js
+                        ...p_cell,
+                        currentState: (p_cell.currentState + 1) % 3
+                    };
+                });
+            });
+
+            //this returns a new puzzle object which react needs
+            return { 
+                ...p_prevPuzzle,
+                rows: p_newRows
+            };
+        });
+    }
+    // while waiting for API this will show "loading puzzle"  (instead of blank screen)
+    if (!p_puzzle) {
+        return <p>Loading puzzle...</p>;
     }
 
-   function resetGame() {
-        const emptyGrid = Array(p_size)
-            .fill(null)
-            .map(() => Array(p_size).fill(""));
-
-        setGrid(emptyGrid);
-    }
-
-    // ✅ RETURN BOTH Grid AND button
+    //render grid
+    //pass the data (rows), the click handler
     return (
         <div>
-            <Grid p_grid={p_grid} p_onClick={handleCellClick} />
-            <button onClick={resetGame}>Reset</button>
+            <Grid p_rows={p_puzzle.rows} p_onCellClick={handleCellClick} />
         </div>
     );
 }
-
 export default Game;
