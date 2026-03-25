@@ -5,7 +5,7 @@ function Cell({ p_state, p_onClick, p_canToggle, p_isWrong }) {
     //helper function to decide cell colour based on state
     function getCellColor() {
         if (p_state === 1) return "#6fa8dc"; //blue state
-        if (p_state === 2) return "#ffffff"; //white state
+        if (p_state === 2) return "#5a5a5a"; //grey state = locked
         return "#d9d9d9"; //empty / neutral state
     }
 

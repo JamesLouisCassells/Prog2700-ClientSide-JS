@@ -8,6 +8,7 @@ import Grid from "./Grid";
 
 function Game() { //this replaces my mainjson variable from game.js
     //setting state variables
+    const [p_originalPuzzle, setOriginalPuzzle] = useState(null); //stores the starting version for reset
     const [p_puzzle, setPuzzle] = useState(null); //starts as null because theres no initial fetch
     const [p_statusMessage, setStatusMessage] = useState(""); //stores the message shown after clicking check puzzle
     const [p_showErrors, setShowErrors] = useState(false); //tracks whether the checkbox is checked
@@ -25,6 +26,7 @@ function Game() { //this replaces my mainjson variable from game.js
                 //assign fetched json as a variable
                 const p_json = await p_response.json();
                 setPuzzle(p_json); //stores it as React state
+                setOriginalPuzzle(JSON.parse(JSON.stringify(p_json))); //deep copy so it doesn't get mutated
             }
             catch (p_error) {
                 console.error("Error fetching puzzle:", p_error);
@@ -65,6 +67,17 @@ function Game() { //this replaces my mainjson variable from game.js
                 rows: p_newRows
             };
         });
+    }
+
+    function resetPuzzle() {
+        if (!p_originalPuzzle) { //if its not the exact orientation of the original puzzle
+            return;
+        }
+        //restore original puzzle
+        setPuzzle(JSON.parse(JSON.stringify(p_originalPuzzle)));
+        //clear UI state
+        setStatusMessage("");
+        setShowErrors(false);
     }
 
     //checks the whole puzzle and decides what message to show
@@ -124,6 +137,8 @@ function Game() { //this replaces my mainjson variable from game.js
 
             {/* button to check the puzzle status */}
             <button onClick={checkPuzzle}>Check Puzzle</button>
+             {/* button to reset the puzzle status !*/}
+            <button onClick={resetPuzzle}>Reset Puzzle</button>
 
             <label>
                 <input
